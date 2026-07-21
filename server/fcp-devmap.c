@@ -31,7 +31,7 @@ static json_object *try_load_devmap_json(const char *dir, const char *filename) 
 
 static int fcp_devmap_read_from_file(struct fcp_device *device) {
   char *filename;
-  if (asprintf(&filename, "fcp-devmap-%04x.json", device->usb_pid) < 0) {
+  if (asprintf(&filename, "fcp-devmap-%s.json", device->map_key) < 0) {
     log_error("Failed to allocate memory for filename");
     exit(1);
   }
@@ -180,12 +180,12 @@ static int fcp_devmap_read_from_device(struct fcp_device *device) {
   /* write the json to a file for debugging */
   char *fn;
   if (firmware_version > 0) {
-    if (asprintf(&fn, "/tmp/fcp-devmap-%04x-%d.json", device->usb_pid, firmware_version) < 0) {
+    if (asprintf(&fn, "/tmp/fcp-devmap-%s-%d.json", device->map_key, firmware_version) < 0) {
       log_error("Failed to allocate memory for filename");
       exit(1);
     }
   } else {
-    if (asprintf(&fn, "/tmp/fcp-devmap-%04x.json", device->usb_pid) < 0) {
+    if (asprintf(&fn, "/tmp/fcp-devmap-%s.json", device->map_key) < 0) {
       log_error("Failed to allocate memory for filename");
       exit(1);
     }

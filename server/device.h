@@ -31,6 +31,8 @@ struct fcp_device {
   int                     card_num;
   uint16_t                usb_vid;
   uint16_t                usb_pid;
+  char                   *map_key;  /* per-model key for map filenames: USB pid ("821d") or
+                                       Clarett Thunderbolt model slug ("clarett-8prex") */
   snd_ctl_t              *ctl;
   snd_hwdep_t            *hwdep;
   json_object            *devmap;

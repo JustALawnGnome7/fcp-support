@@ -25,8 +25,12 @@
 
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 
-// Get USB IDs from procfs - format is "VID:PID"
-static void get_usb_ids(int card_num, uint16_t *vid, uint16_t *pid) {
+// Get USB IDs from procfs - format is "VID:PID". Returns 0 on success, or
+// -ENOENT if the card exposes no usbid at all, meaning it is not a USB device
+// (e.g. a Clarett Thunderbolt card) and the caller should try another way of
+// identifying it. A card that has a usbid which cannot be read or parsed stays
+// a fatal error: that is a USB device we failed to identify, not a non-USB one.
+static int get_usb_ids(int card_num, uint16_t *vid, uint16_t *pid) {
   char *proc_path;
   char usbid[10]; // VID:PID + newline + null
   FILE *f;
@@ -38,8 +42,8 @@ static void get_usb_ids(int card_num, uint16_t *vid, uint16_t *pid) {
 
   f = fopen(proc_path, "r");
   if (!f) {
-    log_error("Card %d is not a USB audio device", card_num);
-    exit(1);
+    free(proc_path);
+    return -ENOENT;
   }
 
   if (!fgets(usbid, sizeof(usbid), f)) {
@@ -73,6 +77,45 @@ static void get_usb_ids(int card_num, uint16_t *vid, uint16_t *pid) {
 
   *vid = scan_vid;
   *pid = scan_pid;
+  return 0;
+}
+
+// Get the Clarett Thunderbolt model slug from /proc/asound/cardN/clarett. The
+// whole Clarett (and likely Red) line shares PCI id 1cb5:0002, so the snd-clarett
+// driver publishes the auto-detected model there as a stable slug (e.g. a line
+// "slug: clarett-8prex"). We use that slug as the per-model map key, the way a USB
+// device is keyed on its product id. Returns 0 and a malloc'd slug in *out, or
+// -ENOENT if the card is not a Clarett (no such proc entry / no slug line).
+static int get_clarett_slug(int card_num, char **out) {
+  char *proc_path;
+  FILE *f;
+
+  if (asprintf(&proc_path, "/proc/asound/card%d/clarett", card_num) < 0) {
+    log_error("Cannot allocate memory for proc path");
+    exit(1);
+  }
+
+  f = fopen(proc_path, "r");
+  free(proc_path);
+  if (!f)
+    return -ENOENT;
+
+  char line[128];
+  char *slug = NULL;
+  while (fgets(line, sizeof(line), f)) {
+    char buf[64];
+    if (sscanf(line, "slug: %63s", buf) == 1) {
+      slug = strdup(buf);
+      break;
+    }
+  }
+  fclose(f);
+
+  if (!slug)
+    return -ENOENT;
+
+  *out = slug;
+  return 0;
 }
 
 static int get_alsa_fd(const char *type, void *handle, int (*fd_count)(void*), int (*get_fds)(void*, struct pollfd*, unsigned int)) {
@@ -136,9 +179,25 @@ int device_init(int card_num, struct fcp_device *device) {
   memset(device, 0, sizeof(*device));
   device->card_num = card_num;
 
-  // Get USB IDs
-  get_usb_ids(card_num, &device->usb_vid, &device->usb_pid);
-  log_debug("USB ID: %04x:%04x", device->usb_vid, device->usb_pid);
+  // Identify the device and build the per-model key used for map filenames.
+  // USB devices expose /proc/asound/cardN/usbid and are keyed on the PID; the
+  // Clarett Thunderbolt line shares one PCI id, so its driver publishes a stable
+  // model slug at /proc/asound/cardN/clarett, which we use as the key instead.
+  if (get_usb_ids(card_num, &device->usb_vid, &device->usb_pid) == 0) {
+    log_debug("USB ID: %04x:%04x", device->usb_vid, device->usb_pid);
+    if (asprintf(&device->map_key, "%04x", device->usb_pid) < 0) {
+      log_error("Cannot allocate memory for map key");
+      return -ENOMEM;
+    }
+  } else if (get_clarett_slug(card_num, &device->map_key) == 0) {
+    log_debug("Model slug: %s", device->map_key);
+  } else {
+    // Neither a USB device nor one that names a model slug, so there is no key
+    // to look a map up by and nothing to say about it. Distinct from
+    // -ENOPROTOOPT, which means we identified the card but found no hwdep.
+    log_debug("Card %d is not a USB audio device and names no model", card_num);
+    return -ENODEV;
+  }
 
   // Create ALSA device name and open interfaces
   snprintf(card_name, sizeof(card_name), "hw:%d", card_num);
@@ -516,11 +575,13 @@ void device_get_fds(struct fcp_device *device, int *ctl_fd, int *hwdep_fd) {
 
 // Locate the ALSA map for a device, searching the environment
 // override, the current directory, then the installed data directory.
+// The map key is the device's USB product id, or a model slug for a
+// device that has no USB id (see device_init()).
 // Returns the readable path, which the caller frees, or NULL.
-static char *find_alsa_map(uint16_t usb_pid) {
+static char *find_alsa_map(const char *map_key) {
   char *filename;
 
-  if (asprintf(&filename, "fcp-alsa-map-%04x.json", usb_pid) < 0) {
+  if (asprintf(&filename, "fcp-alsa-map-%s.json", map_key) < 0) {
     log_error("Cannot allocate memory for filename");
     return NULL;
   }
@@ -558,9 +619,17 @@ static char *find_alsa_map(uint16_t usb_pid) {
 // the map names it, receives the kernel versions whose FCP driver
 // handles it, for the caller to free.
 bool device_pid_supported(uint16_t usb_pid, char **kernel_support) {
-  char *path = find_alsa_map(usb_pid);
+  char *map_key;
 
   *kernel_support = NULL;
+
+  if (asprintf(&map_key, "%04x", usb_pid) < 0) {
+    log_error("Cannot allocate memory for map key");
+    return false;
+  }
+
+  char *path = find_alsa_map(map_key);
+  free(map_key);
 
   if (!path)
     return false;
@@ -591,9 +660,9 @@ int device_load_config(struct fcp_device *device) {
   }
 
   // Read FCP ALSA map
-  char *path = find_alsa_map(device->usb_pid);
+  char *path = find_alsa_map(device->map_key);
   if (!path) {
-    log_error("Cannot find FCP ALSA map for %04x", device->usb_pid);
+    log_error("Cannot find FCP ALSA map for %s", device->map_key);
     return -ENOENT;
   }
 
