@@ -375,10 +375,19 @@ int fcp_mux_info(snd_hwdep_t *hwdep, int *values) {
   return 0;
 }
 
-/* Read mux data */
-int fcp_mux_read(
+/* The mux reply is windowed: a device may answer with fewer entries than asked for, however large
+ * a count is requested, and the request's offset field selects where the window starts. Measured on
+ * a Focusrite Clarett 4Pre (Thunderbolt), every MUX_READ reply carries at most 28 entries (112
+ * bytes), so a single count=74 request returned the first 28 entries followed by filler - silently
+ * hiding the rest of the routing table. Read in chunks and let offset walk the table.
+ */
+#define FCP_MUX_READ_CHUNK 28
+
+/* Read one window of mux data, starting at entry `offset` */
+static int fcp_mux_read_chunk(
   snd_hwdep_t *hwdep,
   int          mux_num,
+  int          offset,
   int          count,
   uint32_t    *values
 ) {
@@ -398,10 +407,10 @@ int fcp_mux_read(
   }
 
   /* Prepare request data */
-  req.offset = 0;
+  req.offset = offset;
   req.pad = 0;
-  req.count = htole16(count);
-  req.mux_num = htole16(mux_num);
+  req.count = count;
+  req.mux_num = mux_num;
 
   /* Send command */
   int err = fcp_cmd(
@@ -421,6 +430,28 @@ int fcp_mux_read(
     values[i] = le32toh(resp[i]);
 
   free(resp);
+  return 0;
+}
+
+/* Read mux data */
+int fcp_mux_read(
+  snd_hwdep_t *hwdep,
+  int          mux_num,
+  int          count,
+  uint32_t    *values
+) {
+  for (int done = 0; done < count; done += FCP_MUX_READ_CHUNK) {
+    int chunk = count - done;
+
+    if (chunk > FCP_MUX_READ_CHUNK)
+      chunk = FCP_MUX_READ_CHUNK;
+
+    int err = fcp_mux_read_chunk(hwdep, mux_num, done, chunk, values + done);
+
+    if (err < 0)
+      return err;
+  }
+
   return 0;
 }
 
