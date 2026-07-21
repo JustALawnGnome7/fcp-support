@@ -68,6 +68,14 @@ struct control_props {
   // other bits are preserved on write
   unsigned int mask;
   int    read_only;
+  /* Inverted storage: some devices store a magnitude that runs opposite to the ALSA value, e.g.
+   * the Focusrite Clarett Thunderbolt line stores output volume as an unsigned ATTENUATION byte
+   * (0 = unity, 127 = -127 dB) where the Scarlett 4th gen stores a signed dB byte. When
+   * value_invert is set, device = value_invert_base - alsa (and the reverse, it is an involution),
+   * so the ALSA side keeps its natural ascending dB range and its DB_MINMAX TLV stays valid.
+   * Zero-defaults to identity, so control creators that don't set it are unaffected. */
+  int    value_invert;
+  int    value_invert_base;
   int    notify_client;
   int    notify_device;
   int    offset;

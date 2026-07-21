@@ -391,6 +391,9 @@ static int create_global_control(
     props.min = 0;
     props.max = 1;
 
+    /* Active-low switches: "invert" with "invert-base": 1 maps device = 1 - alsa. */
+    parse_control_invert(control_config, &props);
+
   } else if (!strcmp(type_str, "bytes")) {
     props.type = SND_CTL_ELEM_TYPE_BYTES;
     props.size = json_object_get_int(json_object_object_get(member, "size"));
@@ -440,6 +443,8 @@ static int create_global_control(
       tlv[3] = json_object_get_int(db_max) * 100;
       props.tlv = tlv;
     }
+
+    parse_control_invert(control_config, &props);
 
     if (json_object_object_get_ex(control_config, "interface", &interface)) {
       const char *interface_str = json_object_get_string(interface);

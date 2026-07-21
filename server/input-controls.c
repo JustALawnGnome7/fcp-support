@@ -128,6 +128,9 @@ static int create_input_control(
     props.min = 0;
     props.max = 1;
 
+    /* Active-low switches: "invert" with "invert-base": 1 maps device = 1 - alsa. */
+    parse_control_invert(control_config, &props);
+
   } else if (!strcmp(type_str, "int")) {
     struct json_object *min, *max;
     int min_val, max_val;
@@ -162,6 +165,8 @@ static int create_input_control(
 
       props.tlv = tlv;
     }
+
+    parse_control_invert(control_config, &props);
 
   } else if (!strcmp(type_str, "enum")) {
     struct json_object *values =

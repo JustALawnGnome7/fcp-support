@@ -7,6 +7,17 @@
 
 /* Common control read/write functions used by all control types */
 
+/* ALSA value <-> inverted device representation (see value_invert in struct control_props) */
+int invert_control_value(
+  const struct control_props *props,
+  int                         value
+);
+
+void parse_control_invert(
+  struct json_object   *control_config,
+  struct control_props *props
+);
+
 int read_data_control(
   struct fcp_device    *device,
   struct control_props *props,

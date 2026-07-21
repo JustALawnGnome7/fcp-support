@@ -210,6 +210,36 @@ static int value_for_control(struct control_props *props, int value) {
   return !!value;
 }
 
+/* Convert between the ALSA value and the stored device value for controls whose device
+ * representation runs backwards (see value_invert in struct control_props). The mapping is an
+ * involution, so one function serves both directions; identity when value_invert is unset.
+ * Applied only to single-value controls: multi-component controls are read-only aggregates
+ * (firmware version and friends) with no meaningful inversion.
+ */
+int invert_control_value(const struct control_props *props, int value) {
+  if (!props->value_invert)
+    return value;
+
+  return props->value_invert_base - value;
+}
+
+/* Read the invert configuration for an int control from an ALSA map entry. "invert-base" defaults
+ * to 0, which is the -gain <-> +attenuation case; a device storing e.g. 127-v sets it to 127.
+ */
+void parse_control_invert(struct json_object *control_config, struct control_props *props) {
+  struct json_object *invert, *invert_base;
+
+  if (!json_object_object_get_ex(control_config, "invert", &invert) ||
+      !json_object_get_boolean(invert))
+    return;
+
+  props->value_invert = 1;
+  props->value_invert_base =
+    json_object_object_get_ex(control_config, "invert-base", &invert_base)
+      ? json_object_get_int(invert_base)
+      : 0;
+}
+
 int read_data_control(struct fcp_device *device, struct control_props *props, int *value) {
   if (!props->component_count) {
     int read_value, err;
@@ -244,7 +274,11 @@ int read_data_control(struct fcp_device *device, struct control_props *props, in
       return -1;
     }
 
-    *value = value_for_control(props, read_value);
+    /* Undo the device's storage encoding first, then fit the result to what
+     * the control can hold: inverting is what makes the value mean anything in
+     * the control's terms, so it has to happen before the range is enforced.
+     */
+    *value = value_for_control(props, invert_control_value(props, read_value));
     return 0;
   }
 
@@ -295,6 +329,11 @@ int write_data_control(struct fcp_device *device, struct control_props *props, i
     }
     value = props->enum_values[value];
   }
+
+  /* Into the device's storage encoding before anything below combines this
+   * with bits the device already holds (the mirror of the read path).
+   */
+  value = invert_control_value(props, value);
 
   /* Masked controls only cover some bits of the member: read the
    * current value and preserve the other bits

@@ -124,6 +124,9 @@ static int create_output_control(
     props.min = 0;
     props.max = 1;
 
+    /* Active-low switches: "invert" with "invert-base": 1 maps device = 1 - alsa. */
+    parse_control_invert(control_config, &props);
+
   } else if (!strcmp(type_str, "int")) {
     struct json_object *min, *max;
 
@@ -148,6 +151,8 @@ static int create_output_control(
       tlv[3] = json_object_get_int(db_max) * 100;
       props.tlv = tlv;
     }
+
+    parse_control_invert(control_config, &props);
 
   } else if (!strcmp(type_str, "enum")) {
     struct json_object *values;
@@ -467,6 +472,8 @@ static int create_output_group_controls(
           tlv[3] = json_object_get_int(db_max_obj) * 100;
           props.tlv = tlv;
         }
+
+        parse_control_invert(control_config, &props);
 
       } else {
         log_error("Unsupported control type %s for %s", type_str, control_path);
