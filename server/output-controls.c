@@ -46,9 +46,16 @@ int write_data_control_vol(struct fcp_device *device, struct control_props *prop
   return 0;
 }
 
+/* output_num: the output's position in the device specification, 0-based. Names are built from it
+ * rather than from array_index, which addresses the member and need not run 0,1,2,... - a device
+ * whose output volumes are strided in the app space (pairs at base+{0,1}, pairs stepping by 4)
+ * indexes 0,1,4,5 for four outputs, and naming from that gives "Line 1, Line 2, Line 5, Line 6".
+ * Where a devmap indexes contiguously the two are identical.
+ */
 static int create_output_control(
   struct fcp_device  *device,
   const char         *output_name,
+  int                 output_num,
   int                 array_index,
   struct json_object *member,
   const char         *control_type,
@@ -84,7 +91,7 @@ static int create_output_control(
   /* Format control name */
   snprintf(control_name, sizeof(control_name),
            json_object_get_string(name_format),
-           array_index + 1);
+           output_num + 1);
 
   /* Create the control */
   struct control_props props = {
@@ -256,6 +263,7 @@ static int create_output_controls(
         int err = create_output_control(
           device,
           output_name,
+          i,
           json_object_get_int(index),
           member,
           json_object_get_string(member_name),
@@ -537,6 +545,7 @@ static int create_global_output_array_controls(
       int err = create_output_control(
         device,
         NULL,
+        i,
         i,
         member,
         config_key,
