@@ -240,6 +240,86 @@ void parse_control_invert(struct json_object *control_config, struct control_pro
       : 0;
 }
 
+/* Parse an ALSA map "values" array into enum names, and — for the object form — the device values
+ * they correspond to.
+ *
+ * Two forms, both already used by global-controls.c:
+ *   ["Off", "On"]                                    device value == index
+ *   [{"name": "Line", "value": 1}, ...]              device value given explicitly
+ *
+ * The explicit form is needed whenever the device's encoding is not 0..N-1, e.g. a preamp mode byte
+ * where {Mic=0, Line=1, Inst=2} is the line-wide encoding but a particular model can only select
+ * Line and Inst (the mic path being selected by the jack, not by software). Listing a value the
+ * hardware cannot be put into, purely to keep the indices aligned, would offer the user a setting
+ * that does nothing.
+ *
+ * Returns 0 on success, -1 on error (props->enum_names is freed on failure).
+ */
+int parse_control_enum_values(
+  struct json_object   *values,
+  struct control_props *props
+) {
+  int count = json_object_array_length(values);
+
+  if (count <= 0) {
+    log_error("Empty values array for enum %s", props->name);
+    return -1;
+  }
+
+  props->type = SND_CTL_ELEM_TYPE_ENUMERATED;
+  props->enum_count = count;
+  props->enum_names = calloc(count, sizeof(char *));
+  if (!props->enum_names) {
+    log_error("Cannot allocate memory for enum names");
+    return -1;
+  }
+
+  /* The first element decides the form for the whole array */
+  int explicit_values =
+    json_object_get_type(json_object_array_get_idx(values, 0)) == json_type_object;
+
+  if (explicit_values) {
+    props->enum_values = calloc(count, sizeof(int));
+    if (!props->enum_values) {
+      log_error("Cannot allocate memory for enum values");
+      goto fail;
+    }
+  }
+
+  for (int i = 0; i < count; i++) {
+    struct json_object *entry = json_object_array_get_idx(values, i);
+    struct json_object *name = entry, *val;
+
+    if (explicit_values &&
+        !json_object_object_get_ex(entry, "name", &name)) {
+      log_error("Cannot find name in enum value %d of %s", i, props->name);
+      goto fail;
+    }
+
+    props->enum_names[i] = strdup(json_object_get_string(name));
+    if (!props->enum_names[i]) {
+      log_error("Cannot allocate memory for enum name");
+      goto fail;
+    }
+
+    if (explicit_values)
+      props->enum_values[i] =
+        json_object_object_get_ex(entry, "value", &val)
+          ? json_object_get_int(val) : i;
+  }
+
+  return 0;
+
+fail:
+  for (int i = 0; i < count; i++)
+    free(props->enum_names[i]);
+  free(props->enum_names);
+  free(props->enum_values);
+  props->enum_names = NULL;
+  props->enum_values = NULL;
+  return -1;
+}
+
 int read_data_control(struct fcp_device *device, struct control_props *props, int *value) {
   if (!props->component_count) {
     int read_value, err;

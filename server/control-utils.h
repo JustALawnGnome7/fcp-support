@@ -18,6 +18,12 @@ void parse_control_invert(
   struct control_props *props
 );
 
+/* ALSA map "values" array -> enum names (+ explicit device values, for the object form) */
+int parse_control_enum_values(
+  struct json_object   *values,
+  struct control_props *props
+);
+
 int read_data_control(
   struct fcp_device    *device,
   struct control_props *props,

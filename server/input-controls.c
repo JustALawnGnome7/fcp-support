@@ -177,33 +177,11 @@ static int create_input_control(
       return -1;
     }
 
-    int num_values = json_object_array_length(values);
-    if (num_values <= 0) {
-      log_error("Empty values array for enum %s", member_name);
+    /* Accepts both the plain string array and the {"name", "value"} object form, so an input
+     * control can name a device encoding that isn't 0..N-1 (as global-controls.c already could).
+     */
+    if (parse_control_enum_values(values, &props) < 0)
       return -1;
-    }
-
-    props.type = SND_CTL_ELEM_TYPE_ENUMERATED;
-    props.enum_count = num_values;
-
-    props.enum_names = calloc(num_values, sizeof(char *));
-    if (!props.enum_names) {
-      log_error("Cannot allocate memory for enum names");
-      return -1;
-    }
-
-    for (int i = 0; i < num_values; i++) {
-      struct json_object *value = json_object_array_get_idx(values, i);
-
-      props.enum_names[i] = strdup(json_object_get_string(value));
-      if (!props.enum_names[i]) {
-        log_error("Cannot allocate memory for enum name");
-        for (int j = 0; j < i; j++)
-          free(props.enum_names[j]);
-        free(props.enum_names);
-        return -1;
-      }
-    }
 
   } else {
     log_error("Invalid control type: %s", type_str);
