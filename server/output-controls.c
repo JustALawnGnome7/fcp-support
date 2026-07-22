@@ -134,6 +134,20 @@ static int create_output_control(
     /* Active-low switches: "invert" with "invert-base": 1 maps device = 1 - alsa. */
     parse_control_invert(control_config, &props);
 
+  } else if (!strcmp(type_str, "bool-bitmap")) {
+    /* One bit of a shared byte: the member gives the byte, the devmap's per-output "index" gives
+     * the bit. Same type name and read/write functions as the output-group path already uses; this
+     * makes it available to an ordinary per-output control, for a device that packs its per-output
+     * flags rather than giving each one a byte.
+     */
+    props.type = SND_CTL_ELEM_TYPE_BOOLEAN;
+    props.min = 0;
+    props.max = 1;
+    props.read_func = read_bitmap_data_control;
+    props.write_func = write_bitmap_data_control;
+
+    parse_control_invert(control_config, &props);
+
   } else if (!strcmp(type_str, "int")) {
     struct json_object *min, *max;
 
