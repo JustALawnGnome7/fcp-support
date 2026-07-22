@@ -347,11 +347,18 @@ int read_data_control(struct fcp_device *device, struct control_props *props, in
           return 0;
         }
       }
-      log_error(
-        "Invalid enumerated value %d for control %s",
-        read_value, props->name
+      /* The stored byte is outside the set this control can select. Report the first entry rather
+       * than failing the read: a device whose configuration space has never been written holds 0
+       * there, and 0 need not be one of the selectable values (a preamp mode of {Line=1, Inst=2},
+       * say). Failing here would leave the control created but never initialised or unlocked, so
+       * one unwritten byte would take out the control for the whole session.
+       */
+      log_warning(
+        "Value %d of %s is not one of its selectable values; reporting %s",
+        read_value, props->name, props->enum_names[0]
       );
-      return -1;
+      *value = 0;
+      return 0;
     }
 
     /* Undo the device's storage encoding first, then fit the result to what
