@@ -200,7 +200,21 @@ int fcp_meter_info(snd_hwdep_t *hwdep, int *num_meter_slots) {
     return err;
   }
 
+  /* resp[0] is the slot count on USB FCP devices. The Focusrite Clarett Thunderbolt line answers
+   * 00 02 0c 00 - zero there, which invalidates every peak-index and discards the whole meter map.
+   * Zero is not a meaningful answer for a device advertising a meter category, so fall back.
+   *
+   * Reading the reply as {?, banks, slots_per_bank} gives 2 x 12 = 24. Both models answer
+   * byte-identically, and measurement supports the product rather than the 12 alone: a 2Pre has 12
+   * inputs (2 analogue + 2 S/PDIF + 8 ADAT) and a 4Pre has 18 (8 + 2 + 8), with meter slots
+   * measured on hardware at 0-11 and 0-17 respectively. A bound of 12 would silently drop half the
+   * 4Pre's inputs; 24 covers both. GET_METER was separately observed returning live data well past
+   * slot 24, so the device serves more than this bound - it is a floor, not the array size.
+   *
+   * USB devices report a non-zero resp[0] and never reach this path. */
   *num_meter_slots = resp[0];
+  if (!*num_meter_slots)
+    *num_meter_slots = resp[1] * resp[2];
 
   return 0;
 }
