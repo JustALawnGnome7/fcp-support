@@ -13,6 +13,30 @@
 #include "meter.h"
 #include "log.h"
 
+/* Upper bound on a peak-index, so a typo in a hand-written map is still caught. Well above any
+ * plausible slot count; the Clarett 2Pre's array is 48. */
+#define METER_SLOT_LIMIT 128
+
+/* Highest peak-index in a sources/destinations array, or -1 if it has none. */
+static int max_peak_index(struct json_object *entries) {
+  int max = -1;
+
+  for (int i = 0; i < json_object_array_length(entries); i++) {
+    struct json_object *entry = json_object_array_get_idx(entries, i);
+    struct json_object *peak_index;
+
+    if (!json_object_object_get_ex(entry, "peak-index", &peak_index))
+      continue;
+
+    int idx = json_object_get_int(peak_index);
+
+    if (idx > max)
+      max = idx;
+  }
+
+  return max;
+}
+
 static int add_meter_mapping_info(struct fcp_device *device, int map_size, char **labels) {
   struct fcp_meter_labels *fcp_labels;
 
@@ -73,6 +97,25 @@ void add_meter_control(struct fcp_device *device) {
       !json_object_object_get_ex(device->fam, "sinks", &control_sinks)) {
     log_error("Cannot find sources/sinks in fcp-alsa-map");
     return;
+  }
+
+  /* METER_INFO is a floor, not the array size, on devices that report no slot count: the Clarett
+   * Thunderbolt line answers 00 02 0c 00 (-> 2 x 12 = 24), yet a signal routed to Mixer Input 30 on
+   * a 2Pre reads back at slot 47. Where the map asks for more slots than the device admits to, and
+   * every index is inside the sanity limit, believe the map -- its indices are measured. Rejecting
+   * them would not just drop those entries, it would discard the whole meter map below. */
+  int max_idx = max_peak_index(sources);
+  int sink_max = max_peak_index(sinks);
+
+  if (sink_max > max_idx)
+    max_idx = sink_max;
+
+  if (max_idx >= num_meter_slots && max_idx < METER_SLOT_LIMIT) {
+    log_info(
+      "Device reports %d meter slots; map uses up to %d, extending",
+      num_meter_slots, max_idx + 1
+    );
+    num_meter_slots = max_idx + 1;
   }
 
   /* Allocate maximum possible size */
