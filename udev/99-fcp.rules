@@ -1,4 +1,12 @@
+# Focusrite USB interfaces (Scarlett/Clarett USB) — fcp driver.
 SUBSYSTEM=="sound", ATTRS{idVendor}=="1235", \
+    KERNEL=="control*", ACTION=="add", \
+    GROUP="audio", MODE="0660", \
+    ENV{SYSTEMD_WANTS}="fcp-server@%n.service", \
+    TAG+="systemd"
+
+# Focusrite Clarett Thunderbolt (PCI 1cb5:0002, snd-clarett driver).
+SUBSYSTEM=="sound", ATTRS{vendor}=="0x1cb5", ATTRS{device}=="0x0002", \
     KERNEL=="control*", ACTION=="add", \
     GROUP="audio", MODE="0660", \
     ENV{SYSTEMD_WANTS}="fcp-server@%n.service", \
