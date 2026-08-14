@@ -45,6 +45,8 @@ struct fcp_device {
   int                     mix_input_control_count;
   struct mix_cache_entry *mix_cache;
   struct mux_cache       *mux_cache;
+  int                     meter_band;     /* 0=single, 1=double, 2=quad speed; see meter.c */
+  int                     meter_per_rate; /* map carries peak-index-m/-h, so the rate is worth polling */
   struct control_manager  ctrl_mgr;
 };
 

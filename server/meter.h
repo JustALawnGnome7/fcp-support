@@ -6,3 +6,4 @@
 #include "device.h"
 
 void add_meter_control(struct fcp_device *device);
+void meter_poll_rate(struct fcp_device *device);

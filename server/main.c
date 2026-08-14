@@ -14,6 +14,7 @@
 #include "device-ops.h"
 #include "fcp-socket.h"
 #include "log.h"
+#include "meter.h"
 
 static void usage(const char *argv0) {
   log_error("Usage: %s <card-number>", argv0);
@@ -81,12 +82,23 @@ static int run(struct fcp_device *device) {
     fcp_socket_update_sets(&rfds, &nfds);
     nfds++;
 
-    err = select(nfds, &rfds, NULL, NULL, NULL);
+    /* Idle tick. The device gives no notification when its sample rate changes, and the rate can move
+     * with no control event at all (a DAW simply opening a stream), so the meter mapping has to be
+     * re-checked on a timer. One FCP query per second, and a rebuild only when the speed band
+     * actually changes. */
+    struct timeval tv = { .tv_sec = 1, .tv_usec = 0 };
+
+    err = select(nfds, &rfds, NULL, NULL, &tv);
     if (err < 0) {
       if (errno == EINTR)
         continue;
       log_error("Select failed: %s", strerror(errno));
       break;
+    }
+
+    if (err == 0) {
+      meter_poll_rate(device);
+      continue;
     }
 
     // Handle control events
