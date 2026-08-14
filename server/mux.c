@@ -244,9 +244,16 @@ static int write_mux_control(
 
     int slot_num = cache->output_router_slots[props->offset * 3 + rate];
 
-    if (slot_num < 0 && rate == 0) {
-      log_error("Missing router slot for %s", props->name);
-      return -EINVAL;
+    /* A destination that does not exist at this sample rate has no slot: S/MUX drops the upper
+     * ADAT channels (and the record slots behind them) at double and quad speed, so their entries
+     * are absent from the rate 1 and 2 tables. Skip that rate rather than indexing with -1.
+     * At rate 0 every destination must be present, so a missing slot there is a real error. */
+    if (slot_num < 0) {
+      if (rate == 0) {
+        log_error("Missing router slot for %s", props->name);
+        return -EINVAL;
+      }
+      continue;
     }
 
     uint32_t *values = cache->values[rate];
