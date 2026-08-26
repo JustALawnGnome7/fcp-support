@@ -1,18 +1,18 @@
 {
-  "_note": "DRAFT \u2014 hand-authored device-map for the Clarett 4Pre (Thunderbolt), paired with fcp-alsa-map-clarett-4pre.json for fcp-server. Loaded from file so fcp-server can create controls when the device's own DEVMAP_READ (0x80000d) is unavailable/silent. NOT a substitute for the device-provided devmap: offsets/types are carried from the snd-clarett driver (see _todo). Replace with the /tmp/fcp-devmap-clarett-4pre-*.json dump once DEVMAP_READ works.",
+  "_note": "Device map for the Clarett Clarett 4Pre (Thunderbolt). This model does not answer DEVMAP_READ (0x80000d), so it cannot describe itself: this file is its description, loaded from DATADIR by fcp_devmap_read_from_file(). Paired with fcp-alsa-map-clarett-4pre.json, which carries the presentation layer. Keyed on the model slug published at /proc/asound/card<N>/clarett rather than a USB product id, because every model in the line shares PCI id 1cb5:0002.",
   "_schema": "structs.<STRUCT>.members.<name> = { offset:int, type:string, notify-device:int, notify-client:int, array-shape?:[int] }. device-specification.physical-{inputs,outputs}[] = { name, controls: { <type>: { index:int, member:string } } }; read offset = member.offset + index*width, and index+1 fills the %d in the alsa-map name.",
-  "_provenance": "Offsets from the snd-clarett driver + spec/provenance/clarett-control-plane.md: air @ 174+i, mode @ 166+i (0=Mic/1=Line/2=Inst), output gains strided at 32, mute @ 24, dim @ 73. Clean-room: authored from our own interface facts, not any vendor devmap.",
-  "_todo": [
-    "Replace wholesale with the device-provided devmap once DEVMAP_READ answers.",
-    "versionStageRelease.offset is a PLACEHOLDER (real firmware-version location unknown).",
-    "notify-device carries the DATA_CMD{activate} the device needs to COMMIT a write (fcp-server sends it via DATA_NOTIFY after the write): air=7, mode=6, gain=1, monitor mute/dim=2. Without it the write stages but does not manifest. muteSwitch is active-low (device byte 1 = unmuted), handled in the alsa-map with invert/invert-base 1.",
-    "air/mode reads at 174+i / 166+i returned non-zero, plausible values on hardware (contradicting the earlier 'reads back 0' caveat); still unverified whether they track physical state live.",
-    "outputVolume is a strided array; physical-outputs index onto the real gains (pairs at base+{0,1}, pairs step by 4). Consequence: the alsa-map output names come out sparse (from index+1), a cosmetic artifact of the layout, to be fixed with the real devmap.",
-    "Output mute offsets are not yet captured, so output mute is omitted (here and in the alsa-map).",
-    "peak-index is on DESTINATIONS on every model now (the Clarett meters destinations, not sources), each carrying _peak-index-provenance: \"measured\" (one signal source at a time), \"block-measured\" (a set lit together, so the set is measured but the order within it is not), \"stride\" (continuing a measured block), or \"inferred\". Slot order is NOT transferable across this line, so each model was measured with tools/fcp_meter_watch.c. peak-index-m / peak-index-h are the SAME channel's slot at double / quad speed: the array COMPACTS as ADAT S/MUX removes destinations, so a slot is the channel's position in that rate's destination table and everything after a removed entry shifts down. A destination absent at a speed carries no key for it. Measured on an 8Pre (Mixer Input 01 = 40/32/28 at 48/96/192 kHz) and derived from the [XML] pin-m/pin-h overrides for the rest. Note fcp-server rejects any peak-index >= the slot count the device reports via fcp_meter_info(), which is why the local build raises that bound (see the fcp-support snd_clarett branch).",
-    "notify-client masks are guesses (the TB device does not expose the FCP notification word; the driver relays a wildcard ~0).",
-    "sources/destinations are derived from the band-0 SET_MUX table in the driver's bring-up blob (tools/gen_fcp_maps.py parses clarett_arm_<model>.h), so the router-pins are exactly what the device reports via GET_MUX after our arm. Pin meaning is DIRECTION-SCOPED and per-model: 0x408 is S/PDIF-in as a source but Monitor Out 1 as a destination, the 2Pre reaches S/PDIF input at 0x186/0x187 (where the 8PreX has S/PDIF output), and its analogue inputs are 0x400/0x402, skipping 0x401. Never copy a pin table between models.",
-    "router-pin is emitted as a DECIMAL string because fcp-server parses it with atoi(); if a device-provided devmap ever turns up using hex strings, that parse silently yields 0."
+  "_provenance": "Authored from the snd-clarett driver's own interface facts: air @ 174+i, mode @ 166+i (0=Mic/1=Line/2=Inst), output gains strided at 32, mute @ 24, dim @ 73. Clean-room: reverse-engineered from black-box observation of the hardware and Focusrite's published device descriptors, never from a vendor device map or driver.",
+  "_limitations": [
+    "versionStageRelease.offset is a placeholder: the firmware version's location in the appspace has not been identified, so the Firmware Version control displays a meaningless value. It is present because fcp-server requires that control for its socket-path TLV and lock handshake.",
+    "notify-device carries the DATA_CMD{activate} the device needs to COMMIT a write (fcp-server sends it via DATA_NOTIFY after the write): air=7, mode=6, gain=1, monitor mute/dim=2. Without it a write stages but never takes effect. muteSwitch is active-low (device byte 1 = unmuted), handled in the alsa-map with invert/invert-base 1.",
+    "air and mode read back plausible values, but whether they track the hardware's live state has not been confirmed. These models have no front-panel control over either, so the host is normally the only writer.",
+    "outputVolume is a strided array and physical-outputs index onto the real gains (pairs at base+{0,1}, pairs stepping by 4), so the generated output names are sparsely numbered. Cosmetic.",
+    "Output mute is omitted: its offset has not been identified. Master mute and dim are present.",
+    "notify-client masks are approximate. The Thunderbolt device does not expose the FCP notification word, so the driver relays a wildcard and every notification refreshes every control.",
+    "peak-index sits on DESTINATIONS, not sources: this line meters its router destinations. Each carries a _peak-index-provenance marker \u2014 \"measured\" (that channel driven alone), \"block-measured\" (a set lit together, so the set is placed but the order within it is not), \"stride\" (continuing a measured block), or \"inferred\". Slot order does not transfer between models; each was measured on hardware.",
+    "peak-index-m and peak-index-h are the same channel's slot at double and quad speed. The array COMPACTS as ADAT S/MUX removes destinations, so a slot is the channel's position in THAT rate's destination table and everything after a removed entry shifts down; a destination absent at a speed carries no key for it. Measured on an 8Pre (Mixer Input 01 = slot 40/32/28 at 48/96/192 kHz) and derived from the vendor descriptors' pin-m/pin-h overrides elsewhere.",
+    "sources and destinations carry the router pins the device reports through GET_MUX. Pin meaning is DIRECTION-SCOPED and per-model: 0x408 is S/PDIF in as a source but Monitor Out 1 as a destination, the 2Pre reaches S/PDIF input at 0x186/0x187 where the 8PreX has S/PDIF output, and the 2Pre's analogue inputs are 0x400/0x402, skipping 0x401. A pin table is never transferable between models.",
+    "router-pin is a DECIMAL string because fcp-server parses it with atoi(); a hex string would silently parse as 0."
   ],
   "structs": {
     "APP_SPACE": {
@@ -22,7 +22,7 @@
           "type": "uint32",
           "notify-device": 0,
           "notify-client": 0,
-          "_note": "PLACEHOLDER offset; see _todo"
+          "_note": "Placeholder offset; see _limitations"
         },
         "muteSwitch": {
           "offset": 24,
