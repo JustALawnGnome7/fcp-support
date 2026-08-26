@@ -1,0 +1,612 @@
+{
+  "_note": "DRAFT \u2014 hand-authored ALSA control map for the Clarett 8Pre (Thunderbolt), paired with fcp-devmap-clarett-8pre.json. Presentation layer: control names/types/ranges/enum labels (matching the driver's scarlett2-parity set); offsets + bindings live in the devmap. Scoped to a confident slice: preamp air/mode, output levels, master mute/dim.",
+  "_provenance": "Names/types from the snd-clarett in-kernel control set + the shipped fcp-alsa-map-821d.json schema. Clean-room: no vendor map.",
+  "_todo": [
+    "Routing sources/sinks are generated from the model's band-0 SET_MUX bring-up table. LIMITATION: the SOURCE list is the set of pins that table actually routes, which is the factory-default patch, NOT the device's full source inventory \u2014 e.g. the 8PreX only ever routes Mix C-F, so Mix A/B and Mix G-P are absent as selectable sources, and only some PCM playback pins appear. Widening it means asserting pins we have not observed the device accept; verify on the bench (pick a destination, try a pin outside the list, confirm GET_MUX reflects it) before adding.",
+    "The Clarett 8Pre is the exception to the note above, in both directions. It has no capture at all, so its band-0 routing is CONSTRUCTED (the driver arms its own captured routing from clarett_arm_8pre.h): the capture half is the 4Pre's, whose input geometry is identical, and the output half is authored. Its source list is therefore not table-derived either \u2014 it is the hardware's full inventory from the XML, which is what the other models' lists should eventually become. That construction predates any 8Pre hardware, but the unit has since been exercised extensively: its meter map was measured, and the per-rate peak-index-m/-h compaction was measured on it too.",
+    "output-group-sources / output-link are not emitted: those drive the Scarlett 4th gen's output group controls, which this line does not appear to have.",
+    "Add output mute once its offset is captured (omitted; see the devmap _todo).",
+    "Add global masterVolume + firmware-version once backing members/offsets are confirmed (masterVolume overlaps output 0/1 at 32/33, so it is left out of this slice to avoid double-driving one offset).",
+    "Output level uses \"invert\": true, which REQUIRES the Stage-2 fcp-server patch (value_invert in struct control_props; device = invert-base - alsa). The device stores unsigned attenuation (0 = unity, 127 = -127 dB) where the Scarlett 4th gen stores signed dB. On an unpatched fcp-server the key is ignored, every reading lands outside [-127, 0], and the resulting snd_ctl_elem_write EINVAL repeats on every notification refresh.",
+    "Firmware Version reads the versionStageRelease PLACEHOLDER offset, so its displayed value is meaningless \u2014 it exists because fcp-server needs the control for its socket-path TLV + lock handshake. Point it at the real firmware-version location once that is found in the appspace.",
+    "Mode: the device byte is 0=Mic/1=Line/2=Inst line-wide, but only the 8PreX (separate XLR + 1/4\" jacks) can select Mic in software. The combo-jack models (2Pre/4Pre/8Pre) auto-select Mic from the jack, so their enum is Line/Inst carrying explicit values 1/2 \u2014 which REQUIRES the fcp-server patch accepting {name, value} entries in input-controls; on an unpatched server the names parse as an index-valued enum and Line/Inst would write 0/1."
+  ],
+  "input-controls": {
+    "air": {
+      "name": "Line In %d Air Capture Switch",
+      "type": "bool"
+    },
+    "mode2": {
+      "name": "Line In %d Level Capture Enum",
+      "type": "enum",
+      "values": [
+        {
+          "name": "Line",
+          "value": 1
+        },
+        {
+          "name": "Inst",
+          "value": 2
+        }
+      ]
+    }
+  },
+  "output-controls": {
+    "level": {
+      "name": "Line %d Playback Volume",
+      "type": "int",
+      "min": -127,
+      "max": 0,
+      "db-min": -127,
+      "db-max": 0,
+      "invert": true
+    },
+    "hw-gain": {
+      "name": "Line Out %d Volume Control Playback Enum",
+      "type": "bool-bitmap"
+    }
+  },
+  "output-link": [],
+  "global-controls": {
+    "versionStageRelease": {
+      "name": "Firmware Version",
+      "interface": "card",
+      "access": "readonly",
+      "type": "int"
+    },
+    "muteSwitch": {
+      "name": "Mute Playback Switch",
+      "type": "bool"
+    },
+    "monitorVolume": {
+      "name": "Master HW Playback Volume",
+      "type": "int",
+      "access": "readonly",
+      "min": -127,
+      "max": 0,
+      "db-min": -127,
+      "db-max": 0,
+      "invert": true
+    },
+    "dimSwitch": {
+      "name": "Dim Playback Switch",
+      "type": "bool"
+    },
+    "spdifSourceInput": {
+      "name": "S/PDIF Source Capture Enum",
+      "type": "enum",
+      "values": [
+        {
+          "name": "None",
+          "value": 0
+        },
+        {
+          "name": "Optical",
+          "value": 1
+        },
+        {
+          "name": "RCA",
+          "value": 2
+        }
+      ]
+    },
+    "spdifSourceOutput": {
+      "name": "S/PDIF Source Playback Enum",
+      "type": "enum",
+      "values": [
+        {
+          "name": "None",
+          "value": 0
+        },
+        {
+          "name": "Optical",
+          "value": 1
+        },
+        {
+          "name": "RCA",
+          "value": 2
+        }
+      ]
+    }
+  },
+  "sources": [
+    {
+      "device_name": "Analogue 1",
+      "alsa_name": "Analogue 1"
+    },
+    {
+      "device_name": "Analogue 2",
+      "alsa_name": "Analogue 2"
+    },
+    {
+      "device_name": "Analogue 3",
+      "alsa_name": "Analogue 3"
+    },
+    {
+      "device_name": "Analogue 4",
+      "alsa_name": "Analogue 4"
+    },
+    {
+      "device_name": "Analogue 5",
+      "alsa_name": "Analogue 5"
+    },
+    {
+      "device_name": "Analogue 6",
+      "alsa_name": "Analogue 6"
+    },
+    {
+      "device_name": "Analogue 7",
+      "alsa_name": "Analogue 7"
+    },
+    {
+      "device_name": "Analogue 8",
+      "alsa_name": "Analogue 8"
+    },
+    {
+      "device_name": "S/PDIF 1",
+      "alsa_name": "S/PDIF 1"
+    },
+    {
+      "device_name": "S/PDIF 2",
+      "alsa_name": "S/PDIF 2"
+    },
+    {
+      "device_name": "ADAT 1",
+      "alsa_name": "ADAT 1"
+    },
+    {
+      "device_name": "ADAT 2",
+      "alsa_name": "ADAT 2"
+    },
+    {
+      "device_name": "ADAT 3",
+      "alsa_name": "ADAT 3"
+    },
+    {
+      "device_name": "ADAT 4",
+      "alsa_name": "ADAT 4"
+    },
+    {
+      "device_name": "ADAT 5",
+      "alsa_name": "ADAT 5"
+    },
+    {
+      "device_name": "ADAT 6",
+      "alsa_name": "ADAT 6"
+    },
+    {
+      "device_name": "ADAT 7",
+      "alsa_name": "ADAT 7"
+    },
+    {
+      "device_name": "ADAT 8",
+      "alsa_name": "ADAT 8"
+    },
+    {
+      "device_name": "Mix A",
+      "alsa_name": "Mix A"
+    },
+    {
+      "device_name": "Mix B",
+      "alsa_name": "Mix B"
+    },
+    {
+      "device_name": "Mix C",
+      "alsa_name": "Mix C"
+    },
+    {
+      "device_name": "Mix D",
+      "alsa_name": "Mix D"
+    },
+    {
+      "device_name": "Mix E",
+      "alsa_name": "Mix E"
+    },
+    {
+      "device_name": "Mix F",
+      "alsa_name": "Mix F"
+    },
+    {
+      "device_name": "Mix G",
+      "alsa_name": "Mix G"
+    },
+    {
+      "device_name": "Mix H",
+      "alsa_name": "Mix H"
+    },
+    {
+      "device_name": "Mix I",
+      "alsa_name": "Mix I"
+    },
+    {
+      "device_name": "Mix J",
+      "alsa_name": "Mix J"
+    },
+    {
+      "device_name": "Mix K",
+      "alsa_name": "Mix K"
+    },
+    {
+      "device_name": "Mix L",
+      "alsa_name": "Mix L"
+    },
+    {
+      "device_name": "Mix M",
+      "alsa_name": "Mix M"
+    },
+    {
+      "device_name": "Mix N",
+      "alsa_name": "Mix N"
+    },
+    {
+      "device_name": "Mix O",
+      "alsa_name": "Mix O"
+    },
+    {
+      "device_name": "Mix P",
+      "alsa_name": "Mix P"
+    },
+    {
+      "device_name": "PCM 1",
+      "alsa_name": "PCM 1"
+    },
+    {
+      "device_name": "PCM 2",
+      "alsa_name": "PCM 2"
+    },
+    {
+      "device_name": "PCM 3",
+      "alsa_name": "PCM 3"
+    },
+    {
+      "device_name": "PCM 4",
+      "alsa_name": "PCM 4"
+    },
+    {
+      "device_name": "PCM 5",
+      "alsa_name": "PCM 5"
+    },
+    {
+      "device_name": "PCM 6",
+      "alsa_name": "PCM 6"
+    },
+    {
+      "device_name": "PCM 7",
+      "alsa_name": "PCM 7"
+    },
+    {
+      "device_name": "PCM 8",
+      "alsa_name": "PCM 8"
+    },
+    {
+      "device_name": "PCM 9",
+      "alsa_name": "PCM 9"
+    },
+    {
+      "device_name": "PCM 10",
+      "alsa_name": "PCM 10"
+    },
+    {
+      "device_name": "PCM 11",
+      "alsa_name": "PCM 11"
+    },
+    {
+      "device_name": "PCM 12",
+      "alsa_name": "PCM 12"
+    },
+    {
+      "device_name": "PCM 13",
+      "alsa_name": "PCM 13"
+    },
+    {
+      "device_name": "PCM 14",
+      "alsa_name": "PCM 14"
+    },
+    {
+      "device_name": "PCM 15",
+      "alsa_name": "PCM 15"
+    },
+    {
+      "device_name": "PCM 16",
+      "alsa_name": "PCM 16"
+    },
+    {
+      "device_name": "PCM 17",
+      "alsa_name": "PCM 17"
+    },
+    {
+      "device_name": "PCM 18",
+      "alsa_name": "PCM 18"
+    },
+    {
+      "device_name": "PCM 19",
+      "alsa_name": "PCM 19"
+    },
+    {
+      "device_name": "PCM 20",
+      "alsa_name": "PCM 20"
+    }
+  ],
+  "sinks": [
+    {
+      "device_name": "Monitor Output 1",
+      "alsa_name": "Analogue Output 1"
+    },
+    {
+      "device_name": "Monitor Output 2",
+      "alsa_name": "Analogue Output 2"
+    },
+    {
+      "device_name": "Line Output 3",
+      "alsa_name": "Analogue Output 3"
+    },
+    {
+      "device_name": "Line Output 4",
+      "alsa_name": "Analogue Output 4"
+    },
+    {
+      "device_name": "Line Output 5",
+      "alsa_name": "Analogue Output 5"
+    },
+    {
+      "device_name": "Line Output 6",
+      "alsa_name": "Analogue Output 6"
+    },
+    {
+      "device_name": "Line Output 7",
+      "alsa_name": "Analogue Output 7"
+    },
+    {
+      "device_name": "Line Output 8",
+      "alsa_name": "Analogue Output 8"
+    },
+    {
+      "device_name": "Line Output 9",
+      "alsa_name": "Analogue Output 9"
+    },
+    {
+      "device_name": "Line Output 10",
+      "alsa_name": "Analogue Output 10"
+    },
+    {
+      "device_name": "S/PDIF Output 1",
+      "alsa_name": "S/PDIF Output 1"
+    },
+    {
+      "device_name": "S/PDIF Output 2",
+      "alsa_name": "S/PDIF Output 2"
+    },
+    {
+      "device_name": "ADAT Output 1",
+      "alsa_name": "ADAT Output 1"
+    },
+    {
+      "device_name": "ADAT Output 2",
+      "alsa_name": "ADAT Output 2"
+    },
+    {
+      "device_name": "ADAT Output 3",
+      "alsa_name": "ADAT Output 3"
+    },
+    {
+      "device_name": "ADAT Output 4",
+      "alsa_name": "ADAT Output 4"
+    },
+    {
+      "device_name": "ADAT Output 5",
+      "alsa_name": "ADAT Output 5"
+    },
+    {
+      "device_name": "ADAT Output 6",
+      "alsa_name": "ADAT Output 6"
+    },
+    {
+      "device_name": "ADAT Output 7",
+      "alsa_name": "ADAT Output 7"
+    },
+    {
+      "device_name": "ADAT Output 8",
+      "alsa_name": "ADAT Output 8"
+    },
+    {
+      "device_name": "Mixer Input 01",
+      "alsa_name": "Mixer Input 01"
+    },
+    {
+      "device_name": "Mixer Input 02",
+      "alsa_name": "Mixer Input 02"
+    },
+    {
+      "device_name": "Mixer Input 03",
+      "alsa_name": "Mixer Input 03"
+    },
+    {
+      "device_name": "Mixer Input 04",
+      "alsa_name": "Mixer Input 04"
+    },
+    {
+      "device_name": "Mixer Input 05",
+      "alsa_name": "Mixer Input 05"
+    },
+    {
+      "device_name": "Mixer Input 06",
+      "alsa_name": "Mixer Input 06"
+    },
+    {
+      "device_name": "Mixer Input 07",
+      "alsa_name": "Mixer Input 07"
+    },
+    {
+      "device_name": "Mixer Input 08",
+      "alsa_name": "Mixer Input 08"
+    },
+    {
+      "device_name": "Mixer Input 09",
+      "alsa_name": "Mixer Input 09"
+    },
+    {
+      "device_name": "Mixer Input 10",
+      "alsa_name": "Mixer Input 10"
+    },
+    {
+      "device_name": "Mixer Input 11",
+      "alsa_name": "Mixer Input 11"
+    },
+    {
+      "device_name": "Mixer Input 12",
+      "alsa_name": "Mixer Input 12"
+    },
+    {
+      "device_name": "Mixer Input 13",
+      "alsa_name": "Mixer Input 13"
+    },
+    {
+      "device_name": "Mixer Input 14",
+      "alsa_name": "Mixer Input 14"
+    },
+    {
+      "device_name": "Mixer Input 15",
+      "alsa_name": "Mixer Input 15"
+    },
+    {
+      "device_name": "Mixer Input 16",
+      "alsa_name": "Mixer Input 16"
+    },
+    {
+      "device_name": "Mixer Input 17",
+      "alsa_name": "Mixer Input 17"
+    },
+    {
+      "device_name": "Mixer Input 18",
+      "alsa_name": "Mixer Input 18"
+    },
+    {
+      "device_name": "Mixer Input 19",
+      "alsa_name": "Mixer Input 19"
+    },
+    {
+      "device_name": "Mixer Input 20",
+      "alsa_name": "Mixer Input 20"
+    },
+    {
+      "device_name": "Mixer Input 21",
+      "alsa_name": "Mixer Input 21"
+    },
+    {
+      "device_name": "Mixer Input 22",
+      "alsa_name": "Mixer Input 22"
+    },
+    {
+      "device_name": "Mixer Input 23",
+      "alsa_name": "Mixer Input 23"
+    },
+    {
+      "device_name": "Mixer Input 24",
+      "alsa_name": "Mixer Input 24"
+    },
+    {
+      "device_name": "Mixer Input 25",
+      "alsa_name": "Mixer Input 25"
+    },
+    {
+      "device_name": "Mixer Input 26",
+      "alsa_name": "Mixer Input 26"
+    },
+    {
+      "device_name": "Mixer Input 27",
+      "alsa_name": "Mixer Input 27"
+    },
+    {
+      "device_name": "Mixer Input 28",
+      "alsa_name": "Mixer Input 28"
+    },
+    {
+      "device_name": "Mixer Input 29",
+      "alsa_name": "Mixer Input 29"
+    },
+    {
+      "device_name": "Mixer Input 30",
+      "alsa_name": "Mixer Input 30"
+    },
+    {
+      "device_name": "PCM 01",
+      "alsa_name": "PCM 01"
+    },
+    {
+      "device_name": "PCM 02",
+      "alsa_name": "PCM 02"
+    },
+    {
+      "device_name": "PCM 03",
+      "alsa_name": "PCM 03"
+    },
+    {
+      "device_name": "PCM 04",
+      "alsa_name": "PCM 04"
+    },
+    {
+      "device_name": "PCM 05",
+      "alsa_name": "PCM 05"
+    },
+    {
+      "device_name": "PCM 06",
+      "alsa_name": "PCM 06"
+    },
+    {
+      "device_name": "PCM 07",
+      "alsa_name": "PCM 07"
+    },
+    {
+      "device_name": "PCM 08",
+      "alsa_name": "PCM 08"
+    },
+    {
+      "device_name": "PCM 09",
+      "alsa_name": "PCM 09"
+    },
+    {
+      "device_name": "PCM 10",
+      "alsa_name": "PCM 10"
+    },
+    {
+      "device_name": "PCM 11",
+      "alsa_name": "PCM 11"
+    },
+    {
+      "device_name": "PCM 12",
+      "alsa_name": "PCM 12"
+    },
+    {
+      "device_name": "PCM 13",
+      "alsa_name": "PCM 13"
+    },
+    {
+      "device_name": "PCM 14",
+      "alsa_name": "PCM 14"
+    },
+    {
+      "device_name": "PCM 15",
+      "alsa_name": "PCM 15"
+    },
+    {
+      "device_name": "PCM 16",
+      "alsa_name": "PCM 16"
+    },
+    {
+      "device_name": "PCM 17",
+      "alsa_name": "PCM 17"
+    },
+    {
+      "device_name": "PCM 18",
+      "alsa_name": "PCM 18"
+    },
+    {
+      "device_name": "PCM 19",
+      "alsa_name": "PCM 19"
+    },
+    {
+      "device_name": "PCM 20",
+      "alsa_name": "PCM 20"
+    }
+  ]
+}

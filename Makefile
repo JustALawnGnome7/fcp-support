@@ -156,6 +156,7 @@ install-rules:
 install-data:
 	install -d $(DATADIR)
 	install -m 644 data/fcp-alsa-map-*.json $(DATADIR)/
+	install -m 644 data/fcp-devmap-*.json $(DATADIR)/
 
 uninstall:
 	rm -f $(BINDIR)/fcp-tool
@@ -199,6 +200,7 @@ deb:
 	cp systemd/fcp-server.tmpfiles.conf deb-build/usr/lib/tmpfiles.d/fcp-server.conf
 	cp udev/99-fcp.rules deb-build/usr/lib/udev/rules.d/
 	cp data/fcp-alsa-map-*.json deb-build/usr/share/fcp-server/
+	cp data/fcp-devmap-*.json deb-build/usr/share/fcp-server/
 	cp debian/copyright deb-build/usr/share/doc/$(NAME)/
 	sed "s/VERSION/$(PKG_VERSION)/g" debian/control > deb-build/DEBIAN/control
 	install -m 755 debian/postinst deb-build/DEBIAN/postinst
