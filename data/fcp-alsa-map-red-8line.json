@@ -1,0 +1,1318 @@
+{
+  "_note": "Presentation layer for the Red 8Line, paired with fcp-devmap-red-8line.json. Control names follow the scarlett2 conventions alsa-scarlett-gui matches on.",
+  "input-controls": {
+    "air": {
+      "name": "Line In %d Air Capture Switch",
+      "type": "bool"
+    },
+    "mli3": {
+      "name": "Line In %d Level Capture Enum",
+      "type": "enum",
+      "values": [
+        {
+          "name": "Mic",
+          "value": 0
+        },
+        {
+          "name": "Line",
+          "value": 1
+        },
+        {
+          "name": "Inst",
+          "value": 2
+        }
+      ]
+    },
+    "phantom": {
+      "name": "Line In %d Phantom Power Capture Switch",
+      "type": "bool"
+    },
+    "hpf": {
+      "name": "Line In %d High Pass Filter Capture Switch",
+      "type": "bool"
+    },
+    "phase": {
+      "name": "Line In %d Phase Invert Capture Switch",
+      "type": "bool"
+    },
+    "stereo-link": {
+      "name": "Line In %d Stereo Link Capture Switch",
+      "type": "bool"
+    }
+  },
+  "output-controls": {
+    "level": {
+      "name": "Line %d Playback Volume",
+      "type": "int",
+      "min": -112,
+      "max": 0,
+      "db-min": -112,
+      "db-max": 0
+    },
+    "mute": {
+      "name": "Line %d Mute Playback Switch",
+      "type": "bool-bitmap"
+    },
+    "dim": {
+      "name": "Line %d Dim Playback Switch",
+      "type": "bool-bitmap"
+    },
+    "hw-gain": {
+      "name": "Line Out %d Volume Control Playback Enum",
+      "type": "bool-bitmap"
+    }
+  },
+  "output-link": [],
+  "global-controls": {
+    "versionStageRelease": {
+      "name": "Firmware Version",
+      "interface": "card",
+      "access": "readonly",
+      "type": "int"
+    }
+  },
+  "sources": [
+    {
+      "device_name": "Line 4",
+      "alsa_name": "Line 4"
+    },
+    {
+      "device_name": "Line 3",
+      "alsa_name": "Line 3"
+    },
+    {
+      "device_name": "Analogue 2",
+      "alsa_name": "Analogue 2"
+    },
+    {
+      "device_name": "Analogue 1",
+      "alsa_name": "Analogue 1"
+    },
+    {
+      "device_name": "Line 8",
+      "alsa_name": "Line 8"
+    },
+    {
+      "device_name": "Line 7",
+      "alsa_name": "Line 7"
+    },
+    {
+      "device_name": "Line 6",
+      "alsa_name": "Line 6"
+    },
+    {
+      "device_name": "Line 5",
+      "alsa_name": "Line 5"
+    },
+    {
+      "device_name": "S/PDIF L",
+      "alsa_name": "S/PDIF L"
+    },
+    {
+      "device_name": "S/PDIF R",
+      "alsa_name": "S/PDIF R"
+    },
+    {
+      "device_name": "ADAT 1.1",
+      "alsa_name": "ADAT 1.1"
+    },
+    {
+      "device_name": "ADAT 1.2",
+      "alsa_name": "ADAT 1.2"
+    },
+    {
+      "device_name": "ADAT 1.3",
+      "alsa_name": "ADAT 1.3"
+    },
+    {
+      "device_name": "ADAT 1.4",
+      "alsa_name": "ADAT 1.4"
+    },
+    {
+      "device_name": "ADAT 1.5",
+      "alsa_name": "ADAT 1.5"
+    },
+    {
+      "device_name": "ADAT 1.6",
+      "alsa_name": "ADAT 1.6"
+    },
+    {
+      "device_name": "ADAT 1.7",
+      "alsa_name": "ADAT 1.7"
+    },
+    {
+      "device_name": "ADAT 1.8",
+      "alsa_name": "ADAT 1.8"
+    },
+    {
+      "device_name": "ADAT 2.1",
+      "alsa_name": "ADAT 2.1"
+    },
+    {
+      "device_name": "ADAT 2.2",
+      "alsa_name": "ADAT 2.2"
+    },
+    {
+      "device_name": "ADAT 2.3",
+      "alsa_name": "ADAT 2.3"
+    },
+    {
+      "device_name": "ADAT 2.4",
+      "alsa_name": "ADAT 2.4"
+    },
+    {
+      "device_name": "ADAT 2.5",
+      "alsa_name": "ADAT 2.5"
+    },
+    {
+      "device_name": "ADAT 2.6",
+      "alsa_name": "ADAT 2.6"
+    },
+    {
+      "device_name": "ADAT 2.7",
+      "alsa_name": "ADAT 2.7"
+    },
+    {
+      "device_name": "ADAT 2.8",
+      "alsa_name": "ADAT 2.8"
+    },
+    {
+      "device_name": "Mix A",
+      "alsa_name": "Mix A"
+    },
+    {
+      "device_name": "Mix B",
+      "alsa_name": "Mix B"
+    },
+    {
+      "device_name": "Mix C",
+      "alsa_name": "Mix C"
+    },
+    {
+      "device_name": "Mix D",
+      "alsa_name": "Mix D"
+    },
+    {
+      "device_name": "Mix E",
+      "alsa_name": "Mix E"
+    },
+    {
+      "device_name": "Mix F",
+      "alsa_name": "Mix F"
+    },
+    {
+      "device_name": "Mix G",
+      "alsa_name": "Mix G"
+    },
+    {
+      "device_name": "Mix H",
+      "alsa_name": "Mix H"
+    },
+    {
+      "device_name": "Mix I",
+      "alsa_name": "Mix I"
+    },
+    {
+      "device_name": "Mix J",
+      "alsa_name": "Mix J"
+    },
+    {
+      "device_name": "Mix K",
+      "alsa_name": "Mix K"
+    },
+    {
+      "device_name": "Mix L",
+      "alsa_name": "Mix L"
+    },
+    {
+      "device_name": "Mix M",
+      "alsa_name": "Mix M"
+    },
+    {
+      "device_name": "Mix N",
+      "alsa_name": "Mix N"
+    },
+    {
+      "device_name": "Mix O",
+      "alsa_name": "Mix O"
+    },
+    {
+      "device_name": "Mix P",
+      "alsa_name": "Mix P"
+    },
+    {
+      "device_name": "PCM 1",
+      "alsa_name": "PCM 1"
+    },
+    {
+      "device_name": "PCM 2",
+      "alsa_name": "PCM 2"
+    },
+    {
+      "device_name": "PCM 3",
+      "alsa_name": "PCM 3"
+    },
+    {
+      "device_name": "PCM 4",
+      "alsa_name": "PCM 4"
+    },
+    {
+      "device_name": "PCM 5",
+      "alsa_name": "PCM 5"
+    },
+    {
+      "device_name": "PCM 6",
+      "alsa_name": "PCM 6"
+    },
+    {
+      "device_name": "PCM 7",
+      "alsa_name": "PCM 7"
+    },
+    {
+      "device_name": "PCM 8",
+      "alsa_name": "PCM 8"
+    },
+    {
+      "device_name": "PCM 9",
+      "alsa_name": "PCM 9"
+    },
+    {
+      "device_name": "PCM 10",
+      "alsa_name": "PCM 10"
+    },
+    {
+      "device_name": "PCM 11",
+      "alsa_name": "PCM 11"
+    },
+    {
+      "device_name": "PCM 12",
+      "alsa_name": "PCM 12"
+    },
+    {
+      "device_name": "PCM 13",
+      "alsa_name": "PCM 13"
+    },
+    {
+      "device_name": "PCM 14",
+      "alsa_name": "PCM 14"
+    },
+    {
+      "device_name": "PCM 15",
+      "alsa_name": "PCM 15"
+    },
+    {
+      "device_name": "PCM 16",
+      "alsa_name": "PCM 16"
+    },
+    {
+      "device_name": "PCM 17",
+      "alsa_name": "PCM 17"
+    },
+    {
+      "device_name": "PCM 18",
+      "alsa_name": "PCM 18"
+    },
+    {
+      "device_name": "PCM 19",
+      "alsa_name": "PCM 19"
+    },
+    {
+      "device_name": "PCM 20",
+      "alsa_name": "PCM 20"
+    },
+    {
+      "device_name": "PCM 21",
+      "alsa_name": "PCM 21"
+    },
+    {
+      "device_name": "PCM 22",
+      "alsa_name": "PCM 22"
+    },
+    {
+      "device_name": "PCM 23",
+      "alsa_name": "PCM 23"
+    },
+    {
+      "device_name": "PCM 24",
+      "alsa_name": "PCM 24"
+    },
+    {
+      "device_name": "PCM 25",
+      "alsa_name": "PCM 25"
+    },
+    {
+      "device_name": "PCM 26",
+      "alsa_name": "PCM 26"
+    },
+    {
+      "device_name": "PCM 27",
+      "alsa_name": "PCM 27"
+    },
+    {
+      "device_name": "PCM 28",
+      "alsa_name": "PCM 28"
+    },
+    {
+      "device_name": "PCM 29",
+      "alsa_name": "PCM 29"
+    },
+    {
+      "device_name": "PCM 30",
+      "alsa_name": "PCM 30"
+    },
+    {
+      "device_name": "PCM 31",
+      "alsa_name": "PCM 31"
+    },
+    {
+      "device_name": "PCM 32",
+      "alsa_name": "PCM 32"
+    },
+    {
+      "device_name": "Mix Q",
+      "alsa_name": "Mix Q"
+    },
+    {
+      "device_name": "Mix R",
+      "alsa_name": "Mix R"
+    },
+    {
+      "device_name": "Mix S",
+      "alsa_name": "Mix S"
+    },
+    {
+      "device_name": "Mix T",
+      "alsa_name": "Mix T"
+    },
+    {
+      "device_name": "Mix U",
+      "alsa_name": "Mix U"
+    },
+    {
+      "device_name": "Mix V",
+      "alsa_name": "Mix V"
+    },
+    {
+      "device_name": "Mix W",
+      "alsa_name": "Mix W"
+    },
+    {
+      "device_name": "Mix X",
+      "alsa_name": "Mix X"
+    },
+    {
+      "device_name": "Mix Y",
+      "alsa_name": "Mix Y"
+    },
+    {
+      "device_name": "Mix Z",
+      "alsa_name": "Mix Z"
+    },
+    {
+      "device_name": "Mix [",
+      "alsa_name": "Mix ["
+    },
+    {
+      "device_name": "Mix \\",
+      "alsa_name": "Mix \\"
+    },
+    {
+      "device_name": "Mix ]",
+      "alsa_name": "Mix ]"
+    },
+    {
+      "device_name": "Mix ^",
+      "alsa_name": "Mix ^"
+    },
+    {
+      "device_name": "Mix _",
+      "alsa_name": "Mix _"
+    },
+    {
+      "device_name": "Mix `",
+      "alsa_name": "Mix `"
+    },
+    {
+      "device_name": "PCM 33",
+      "alsa_name": "PCM 33"
+    },
+    {
+      "device_name": "PCM 34",
+      "alsa_name": "PCM 34"
+    },
+    {
+      "device_name": "PCM 35",
+      "alsa_name": "PCM 35"
+    },
+    {
+      "device_name": "PCM 36",
+      "alsa_name": "PCM 36"
+    },
+    {
+      "device_name": "PCM 37",
+      "alsa_name": "PCM 37"
+    },
+    {
+      "device_name": "PCM 38",
+      "alsa_name": "PCM 38"
+    },
+    {
+      "device_name": "PCM 39",
+      "alsa_name": "PCM 39"
+    },
+    {
+      "device_name": "PCM 40",
+      "alsa_name": "PCM 40"
+    },
+    {
+      "device_name": "PCM 41",
+      "alsa_name": "PCM 41"
+    },
+    {
+      "device_name": "PCM 42",
+      "alsa_name": "PCM 42"
+    },
+    {
+      "device_name": "PCM 43",
+      "alsa_name": "PCM 43"
+    },
+    {
+      "device_name": "PCM 44",
+      "alsa_name": "PCM 44"
+    },
+    {
+      "device_name": "PCM 45",
+      "alsa_name": "PCM 45"
+    },
+    {
+      "device_name": "PCM 46",
+      "alsa_name": "PCM 46"
+    },
+    {
+      "device_name": "PCM 47",
+      "alsa_name": "PCM 47"
+    },
+    {
+      "device_name": "PCM 48",
+      "alsa_name": "PCM 48"
+    },
+    {
+      "device_name": "PCM 49",
+      "alsa_name": "PCM 49"
+    },
+    {
+      "device_name": "PCM 50",
+      "alsa_name": "PCM 50"
+    },
+    {
+      "device_name": "PCM 51",
+      "alsa_name": "PCM 51"
+    },
+    {
+      "device_name": "PCM 52",
+      "alsa_name": "PCM 52"
+    },
+    {
+      "device_name": "PCM 53",
+      "alsa_name": "PCM 53"
+    },
+    {
+      "device_name": "PCM 54",
+      "alsa_name": "PCM 54"
+    },
+    {
+      "device_name": "PCM 55",
+      "alsa_name": "PCM 55"
+    },
+    {
+      "device_name": "PCM 56",
+      "alsa_name": "PCM 56"
+    },
+    {
+      "device_name": "PCM 57",
+      "alsa_name": "PCM 57"
+    },
+    {
+      "device_name": "PCM 58",
+      "alsa_name": "PCM 58"
+    },
+    {
+      "device_name": "PCM 59",
+      "alsa_name": "PCM 59"
+    },
+    {
+      "device_name": "PCM 60",
+      "alsa_name": "PCM 60"
+    },
+    {
+      "device_name": "PCM 61",
+      "alsa_name": "PCM 61"
+    },
+    {
+      "device_name": "PCM 62",
+      "alsa_name": "PCM 62"
+    },
+    {
+      "device_name": "PCM 63",
+      "alsa_name": "PCM 63"
+    },
+    {
+      "device_name": "PCM 64",
+      "alsa_name": "PCM 64"
+    },
+    {
+      "device_name": "Dante 1",
+      "alsa_name": "Dante 1"
+    },
+    {
+      "device_name": "Dante 2",
+      "alsa_name": "Dante 2"
+    },
+    {
+      "device_name": "Dante 3",
+      "alsa_name": "Dante 3"
+    },
+    {
+      "device_name": "Dante 4",
+      "alsa_name": "Dante 4"
+    },
+    {
+      "device_name": "Dante 5",
+      "alsa_name": "Dante 5"
+    },
+    {
+      "device_name": "Dante 6",
+      "alsa_name": "Dante 6"
+    },
+    {
+      "device_name": "Dante 7",
+      "alsa_name": "Dante 7"
+    },
+    {
+      "device_name": "Dante 8",
+      "alsa_name": "Dante 8"
+    },
+    {
+      "device_name": "Dante 9",
+      "alsa_name": "Dante 9"
+    },
+    {
+      "device_name": "Dante 10",
+      "alsa_name": "Dante 10"
+    },
+    {
+      "device_name": "Dante 11",
+      "alsa_name": "Dante 11"
+    },
+    {
+      "device_name": "Dante 12",
+      "alsa_name": "Dante 12"
+    },
+    {
+      "device_name": "Dante 13",
+      "alsa_name": "Dante 13"
+    },
+    {
+      "device_name": "Dante 14",
+      "alsa_name": "Dante 14"
+    },
+    {
+      "device_name": "Dante 15",
+      "alsa_name": "Dante 15"
+    },
+    {
+      "device_name": "Dante 16",
+      "alsa_name": "Dante 16"
+    },
+    {
+      "device_name": "Dante 17",
+      "alsa_name": "Dante 17"
+    },
+    {
+      "device_name": "Dante 18",
+      "alsa_name": "Dante 18"
+    },
+    {
+      "device_name": "Dante 19",
+      "alsa_name": "Dante 19"
+    },
+    {
+      "device_name": "Dante 20",
+      "alsa_name": "Dante 20"
+    },
+    {
+      "device_name": "Dante 21",
+      "alsa_name": "Dante 21"
+    },
+    {
+      "device_name": "Dante 22",
+      "alsa_name": "Dante 22"
+    },
+    {
+      "device_name": "Dante 23",
+      "alsa_name": "Dante 23"
+    },
+    {
+      "device_name": "Dante 24",
+      "alsa_name": "Dante 24"
+    },
+    {
+      "device_name": "Dante 25",
+      "alsa_name": "Dante 25"
+    },
+    {
+      "device_name": "Dante 26",
+      "alsa_name": "Dante 26"
+    },
+    {
+      "device_name": "Dante 27",
+      "alsa_name": "Dante 27"
+    },
+    {
+      "device_name": "Dante 28",
+      "alsa_name": "Dante 28"
+    },
+    {
+      "device_name": "Dante 29",
+      "alsa_name": "Dante 29"
+    },
+    {
+      "device_name": "Dante 30",
+      "alsa_name": "Dante 30"
+    },
+    {
+      "device_name": "Dante 31",
+      "alsa_name": "Dante 31"
+    },
+    {
+      "device_name": "Dante 32",
+      "alsa_name": "Dante 32"
+    }
+  ],
+  "sinks": [
+    {
+      "device_name": "Line Output 3",
+      "alsa_name": "Analogue Output 9"
+    },
+    {
+      "device_name": "Line Output 4",
+      "alsa_name": "Analogue Output 10"
+    },
+    {
+      "device_name": "Monitor Output 1",
+      "alsa_name": "Analogue Output 1"
+    },
+    {
+      "device_name": "Monitor Output 2",
+      "alsa_name": "Analogue Output 2"
+    },
+    {
+      "device_name": "Headphone 1 (L)",
+      "alsa_name": "Analogue Output 3"
+    },
+    {
+      "device_name": "Headphone 1 (R)",
+      "alsa_name": "Analogue Output 4"
+    },
+    {
+      "device_name": "Headphone 2 (L)",
+      "alsa_name": "Analogue Output 5"
+    },
+    {
+      "device_name": "Headphone 2 (R)",
+      "alsa_name": "Analogue Output 6"
+    },
+    {
+      "device_name": "Line Output 1",
+      "alsa_name": "Analogue Output 7"
+    },
+    {
+      "device_name": "Line Output 2",
+      "alsa_name": "Analogue Output 8"
+    },
+    {
+      "device_name": "S/PDIF Output L",
+      "alsa_name": "S/PDIF Output L"
+    },
+    {
+      "device_name": "S/PDIF Output R",
+      "alsa_name": "S/PDIF Output R"
+    },
+    {
+      "device_name": "ADAT Output 1.1",
+      "alsa_name": "ADAT Output 1.1"
+    },
+    {
+      "device_name": "ADAT Output 1.2",
+      "alsa_name": "ADAT Output 1.2"
+    },
+    {
+      "device_name": "ADAT Output 1.3",
+      "alsa_name": "ADAT Output 1.3"
+    },
+    {
+      "device_name": "ADAT Output 1.4",
+      "alsa_name": "ADAT Output 1.4"
+    },
+    {
+      "device_name": "ADAT Output 1.5",
+      "alsa_name": "ADAT Output 1.5"
+    },
+    {
+      "device_name": "ADAT Output 1.6",
+      "alsa_name": "ADAT Output 1.6"
+    },
+    {
+      "device_name": "ADAT Output 1.7",
+      "alsa_name": "ADAT Output 1.7"
+    },
+    {
+      "device_name": "ADAT Output 1.8",
+      "alsa_name": "ADAT Output 1.8"
+    },
+    {
+      "device_name": "ADAT Output 2.1",
+      "alsa_name": "ADAT Output 2.1"
+    },
+    {
+      "device_name": "ADAT Output 2.2",
+      "alsa_name": "ADAT Output 2.2"
+    },
+    {
+      "device_name": "ADAT Output 2.3",
+      "alsa_name": "ADAT Output 2.3"
+    },
+    {
+      "device_name": "ADAT Output 2.4",
+      "alsa_name": "ADAT Output 2.4"
+    },
+    {
+      "device_name": "ADAT Output 2.5",
+      "alsa_name": "ADAT Output 2.5"
+    },
+    {
+      "device_name": "ADAT Output 2.6",
+      "alsa_name": "ADAT Output 2.6"
+    },
+    {
+      "device_name": "ADAT Output 2.7",
+      "alsa_name": "ADAT Output 2.7"
+    },
+    {
+      "device_name": "ADAT Output 2.8",
+      "alsa_name": "ADAT Output 2.8"
+    },
+    {
+      "device_name": "Mixer Input 01",
+      "alsa_name": "Mixer Input 01"
+    },
+    {
+      "device_name": "Mixer Input 02",
+      "alsa_name": "Mixer Input 02"
+    },
+    {
+      "device_name": "Mixer Input 03",
+      "alsa_name": "Mixer Input 03"
+    },
+    {
+      "device_name": "Mixer Input 04",
+      "alsa_name": "Mixer Input 04"
+    },
+    {
+      "device_name": "Mixer Input 05",
+      "alsa_name": "Mixer Input 05"
+    },
+    {
+      "device_name": "Mixer Input 06",
+      "alsa_name": "Mixer Input 06"
+    },
+    {
+      "device_name": "Mixer Input 07",
+      "alsa_name": "Mixer Input 07"
+    },
+    {
+      "device_name": "Mixer Input 08",
+      "alsa_name": "Mixer Input 08"
+    },
+    {
+      "device_name": "Mixer Input 09",
+      "alsa_name": "Mixer Input 09"
+    },
+    {
+      "device_name": "Mixer Input 10",
+      "alsa_name": "Mixer Input 10"
+    },
+    {
+      "device_name": "Mixer Input 11",
+      "alsa_name": "Mixer Input 11"
+    },
+    {
+      "device_name": "Mixer Input 12",
+      "alsa_name": "Mixer Input 12"
+    },
+    {
+      "device_name": "Mixer Input 13",
+      "alsa_name": "Mixer Input 13"
+    },
+    {
+      "device_name": "Mixer Input 14",
+      "alsa_name": "Mixer Input 14"
+    },
+    {
+      "device_name": "Mixer Input 15",
+      "alsa_name": "Mixer Input 15"
+    },
+    {
+      "device_name": "Mixer Input 16",
+      "alsa_name": "Mixer Input 16"
+    },
+    {
+      "device_name": "Mixer Input 17",
+      "alsa_name": "Mixer Input 17"
+    },
+    {
+      "device_name": "Mixer Input 18",
+      "alsa_name": "Mixer Input 18"
+    },
+    {
+      "device_name": "Mixer Input 19",
+      "alsa_name": "Mixer Input 19"
+    },
+    {
+      "device_name": "Mixer Input 20",
+      "alsa_name": "Mixer Input 20"
+    },
+    {
+      "device_name": "Mixer Input 21",
+      "alsa_name": "Mixer Input 21"
+    },
+    {
+      "device_name": "Mixer Input 22",
+      "alsa_name": "Mixer Input 22"
+    },
+    {
+      "device_name": "Mixer Input 23",
+      "alsa_name": "Mixer Input 23"
+    },
+    {
+      "device_name": "Mixer Input 24",
+      "alsa_name": "Mixer Input 24"
+    },
+    {
+      "device_name": "Mixer Input 25",
+      "alsa_name": "Mixer Input 25"
+    },
+    {
+      "device_name": "Mixer Input 26",
+      "alsa_name": "Mixer Input 26"
+    },
+    {
+      "device_name": "Mixer Input 27",
+      "alsa_name": "Mixer Input 27"
+    },
+    {
+      "device_name": "Mixer Input 28",
+      "alsa_name": "Mixer Input 28"
+    },
+    {
+      "device_name": "Mixer Input 29",
+      "alsa_name": "Mixer Input 29"
+    },
+    {
+      "device_name": "Mixer Input 30",
+      "alsa_name": "Mixer Input 30"
+    },
+    {
+      "device_name": "Mixer Input 31",
+      "alsa_name": "Mixer Input 31"
+    },
+    {
+      "device_name": "Mixer Input 32",
+      "alsa_name": "Mixer Input 32"
+    },
+    {
+      "device_name": "PCM 1",
+      "alsa_name": "PCM 1"
+    },
+    {
+      "device_name": "PCM 2",
+      "alsa_name": "PCM 2"
+    },
+    {
+      "device_name": "PCM 3",
+      "alsa_name": "PCM 3"
+    },
+    {
+      "device_name": "PCM 4",
+      "alsa_name": "PCM 4"
+    },
+    {
+      "device_name": "PCM 5",
+      "alsa_name": "PCM 5"
+    },
+    {
+      "device_name": "PCM 6",
+      "alsa_name": "PCM 6"
+    },
+    {
+      "device_name": "PCM 7",
+      "alsa_name": "PCM 7"
+    },
+    {
+      "device_name": "PCM 8",
+      "alsa_name": "PCM 8"
+    },
+    {
+      "device_name": "PCM 9",
+      "alsa_name": "PCM 9"
+    },
+    {
+      "device_name": "PCM 10",
+      "alsa_name": "PCM 10"
+    },
+    {
+      "device_name": "PCM 11",
+      "alsa_name": "PCM 11"
+    },
+    {
+      "device_name": "PCM 12",
+      "alsa_name": "PCM 12"
+    },
+    {
+      "device_name": "PCM 13",
+      "alsa_name": "PCM 13"
+    },
+    {
+      "device_name": "PCM 14",
+      "alsa_name": "PCM 14"
+    },
+    {
+      "device_name": "PCM 15",
+      "alsa_name": "PCM 15"
+    },
+    {
+      "device_name": "PCM 16",
+      "alsa_name": "PCM 16"
+    },
+    {
+      "device_name": "PCM 17",
+      "alsa_name": "PCM 17"
+    },
+    {
+      "device_name": "PCM 18",
+      "alsa_name": "PCM 18"
+    },
+    {
+      "device_name": "PCM 19",
+      "alsa_name": "PCM 19"
+    },
+    {
+      "device_name": "PCM 20",
+      "alsa_name": "PCM 20"
+    },
+    {
+      "device_name": "PCM 21",
+      "alsa_name": "PCM 21"
+    },
+    {
+      "device_name": "PCM 22",
+      "alsa_name": "PCM 22"
+    },
+    {
+      "device_name": "PCM 23",
+      "alsa_name": "PCM 23"
+    },
+    {
+      "device_name": "PCM 24",
+      "alsa_name": "PCM 24"
+    },
+    {
+      "device_name": "PCM 25",
+      "alsa_name": "PCM 25"
+    },
+    {
+      "device_name": "PCM 26",
+      "alsa_name": "PCM 26"
+    },
+    {
+      "device_name": "PCM 27",
+      "alsa_name": "PCM 27"
+    },
+    {
+      "device_name": "PCM 28",
+      "alsa_name": "PCM 28"
+    },
+    {
+      "device_name": "PCM 29",
+      "alsa_name": "PCM 29"
+    },
+    {
+      "device_name": "PCM 30",
+      "alsa_name": "PCM 30"
+    },
+    {
+      "device_name": "PCM 31",
+      "alsa_name": "PCM 31"
+    },
+    {
+      "device_name": "PCM 32",
+      "alsa_name": "PCM 32"
+    },
+    {
+      "device_name": "Line Output 5",
+      "alsa_name": "Analogue Output 11"
+    },
+    {
+      "device_name": "Line Output 6",
+      "alsa_name": "Analogue Output 12"
+    },
+    {
+      "device_name": "Line Output 7",
+      "alsa_name": "Analogue Output 13"
+    },
+    {
+      "device_name": "Line Output 8",
+      "alsa_name": "Analogue Output 14"
+    },
+    {
+      "device_name": "PCM 33",
+      "alsa_name": "PCM 33"
+    },
+    {
+      "device_name": "PCM 34",
+      "alsa_name": "PCM 34"
+    },
+    {
+      "device_name": "PCM 35",
+      "alsa_name": "PCM 35"
+    },
+    {
+      "device_name": "PCM 36",
+      "alsa_name": "PCM 36"
+    },
+    {
+      "device_name": "PCM 37",
+      "alsa_name": "PCM 37"
+    },
+    {
+      "device_name": "PCM 38",
+      "alsa_name": "PCM 38"
+    },
+    {
+      "device_name": "PCM 39",
+      "alsa_name": "PCM 39"
+    },
+    {
+      "device_name": "PCM 40",
+      "alsa_name": "PCM 40"
+    },
+    {
+      "device_name": "PCM 41",
+      "alsa_name": "PCM 41"
+    },
+    {
+      "device_name": "PCM 42",
+      "alsa_name": "PCM 42"
+    },
+    {
+      "device_name": "PCM 43",
+      "alsa_name": "PCM 43"
+    },
+    {
+      "device_name": "PCM 44",
+      "alsa_name": "PCM 44"
+    },
+    {
+      "device_name": "PCM 45",
+      "alsa_name": "PCM 45"
+    },
+    {
+      "device_name": "PCM 46",
+      "alsa_name": "PCM 46"
+    },
+    {
+      "device_name": "PCM 47",
+      "alsa_name": "PCM 47"
+    },
+    {
+      "device_name": "PCM 48",
+      "alsa_name": "PCM 48"
+    },
+    {
+      "device_name": "PCM 49",
+      "alsa_name": "PCM 49"
+    },
+    {
+      "device_name": "PCM 50",
+      "alsa_name": "PCM 50"
+    },
+    {
+      "device_name": "PCM 51",
+      "alsa_name": "PCM 51"
+    },
+    {
+      "device_name": "PCM 52",
+      "alsa_name": "PCM 52"
+    },
+    {
+      "device_name": "PCM 53",
+      "alsa_name": "PCM 53"
+    },
+    {
+      "device_name": "PCM 54",
+      "alsa_name": "PCM 54"
+    },
+    {
+      "device_name": "PCM 55",
+      "alsa_name": "PCM 55"
+    },
+    {
+      "device_name": "PCM 56",
+      "alsa_name": "PCM 56"
+    },
+    {
+      "device_name": "PCM 57",
+      "alsa_name": "PCM 57"
+    },
+    {
+      "device_name": "PCM 58",
+      "alsa_name": "PCM 58"
+    },
+    {
+      "device_name": "PCM 59",
+      "alsa_name": "PCM 59"
+    },
+    {
+      "device_name": "PCM 60",
+      "alsa_name": "PCM 60"
+    },
+    {
+      "device_name": "Dante 1",
+      "alsa_name": "Dante 1"
+    },
+    {
+      "device_name": "Dante 2",
+      "alsa_name": "Dante 2"
+    },
+    {
+      "device_name": "Dante 3",
+      "alsa_name": "Dante 3"
+    },
+    {
+      "device_name": "Dante 4",
+      "alsa_name": "Dante 4"
+    },
+    {
+      "device_name": "Dante 5",
+      "alsa_name": "Dante 5"
+    },
+    {
+      "device_name": "Dante 6",
+      "alsa_name": "Dante 6"
+    },
+    {
+      "device_name": "Dante 7",
+      "alsa_name": "Dante 7"
+    },
+    {
+      "device_name": "Dante 8",
+      "alsa_name": "Dante 8"
+    },
+    {
+      "device_name": "Dante 9",
+      "alsa_name": "Dante 9"
+    },
+    {
+      "device_name": "Dante 10",
+      "alsa_name": "Dante 10"
+    },
+    {
+      "device_name": "Dante 11",
+      "alsa_name": "Dante 11"
+    },
+    {
+      "device_name": "Dante 12",
+      "alsa_name": "Dante 12"
+    },
+    {
+      "device_name": "Dante 13",
+      "alsa_name": "Dante 13"
+    },
+    {
+      "device_name": "Dante 14",
+      "alsa_name": "Dante 14"
+    },
+    {
+      "device_name": "Dante 15",
+      "alsa_name": "Dante 15"
+    },
+    {
+      "device_name": "Dante 16",
+      "alsa_name": "Dante 16"
+    },
+    {
+      "device_name": "Dante 17",
+      "alsa_name": "Dante 17"
+    },
+    {
+      "device_name": "Dante 18",
+      "alsa_name": "Dante 18"
+    },
+    {
+      "device_name": "Dante 19",
+      "alsa_name": "Dante 19"
+    },
+    {
+      "device_name": "Dante 20",
+      "alsa_name": "Dante 20"
+    },
+    {
+      "device_name": "Dante 21",
+      "alsa_name": "Dante 21"
+    },
+    {
+      "device_name": "Dante 22",
+      "alsa_name": "Dante 22"
+    },
+    {
+      "device_name": "Dante 23",
+      "alsa_name": "Dante 23"
+    },
+    {
+      "device_name": "Dante 24",
+      "alsa_name": "Dante 24"
+    },
+    {
+      "device_name": "Dante 25",
+      "alsa_name": "Dante 25"
+    },
+    {
+      "device_name": "Dante 26",
+      "alsa_name": "Dante 26"
+    },
+    {
+      "device_name": "Dante 27",
+      "alsa_name": "Dante 27"
+    },
+    {
+      "device_name": "Dante 28",
+      "alsa_name": "Dante 28"
+    },
+    {
+      "device_name": "Dante 29",
+      "alsa_name": "Dante 29"
+    },
+    {
+      "device_name": "Dante 30",
+      "alsa_name": "Dante 30"
+    },
+    {
+      "device_name": "Dante 31",
+      "alsa_name": "Dante 31"
+    },
+    {
+      "device_name": "Dante 32",
+      "alsa_name": "Dante 32"
+    }
+  ]
+}
