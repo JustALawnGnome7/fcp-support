@@ -11,6 +11,7 @@
 #include "fcp-devmap.h"
 #include "device-ops.h"
 #include "log.h"
+#include "control-utils.h"
 
 void invalidate_mix_cache(struct fcp_device *device) {
   struct mix_cache_entry *cache = device->mix_cache;
@@ -280,11 +281,12 @@ void add_mix_controls(struct fcp_device *device) {
 
       /* Create a control for this mixer input */
       char control_name[64];
+      char mix_label[8];
       snprintf(
         control_name,
         sizeof(control_name),
-        "Mix %c Input %02d Playback Volume",
-        'A' + i,
+        "Mix %s Input %02d Playback Volume",
+        mix_output_label(i, mix_label, sizeof(mix_label)),
         num
       );
 

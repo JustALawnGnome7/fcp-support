@@ -48,6 +48,14 @@ int write_bitmap_data_control(
   int                   value
 );
 
+/* Mix output label: 0-25 -> "A".."Z", then "AA", "AB", ... (bijective base 26,
+ * the spreadsheet-column scheme).  Devices with more than 26 mixes exist -- the
+ * Thunderbolt Red 8Line has 32 -- and the obvious 'A' + i runs straight off the
+ * end of the alphabet into "Mix [", "Mix \\", "Mix ]".  That is not merely ugly:
+ * GKeyFile rejects '[' and ']' in a key name, so a client storing control state
+ * in one (alsa-scarlett-gui does) silently drops those mixes.  Returns buf. */
+char *mix_output_label(int index, char *buf, size_t len);
+
 int devmap_type_to_data_type(const char *type);
 int devmap_member_type_to_data_type(
   struct fcp_device *device,

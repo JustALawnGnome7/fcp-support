@@ -106,11 +106,11 @@
     },
     {
       "device_name": "S/PDIF L",
-      "alsa_name": "S/PDIF L"
+      "alsa_name": "S/PDIF 1"
     },
     {
       "device_name": "S/PDIF R",
-      "alsa_name": "S/PDIF R"
+      "alsa_name": "S/PDIF 2"
     },
     {
       "device_name": "ADAT 1.1",
@@ -732,11 +732,11 @@
     },
     {
       "device_name": "S/PDIF Output L",
-      "alsa_name": "S/PDIF Output L"
+      "alsa_name": "S/PDIF Output 1"
     },
     {
       "device_name": "S/PDIF Output R",
-      "alsa_name": "S/PDIF Output R"
+      "alsa_name": "S/PDIF Output 2"
     },
     {
       "device_name": "ADAT Output 1.1",

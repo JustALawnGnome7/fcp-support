@@ -104,6 +104,27 @@ int find_member_by_path_with_notify(
   return 0;
 }
 
+char *mix_output_label(int index, char *buf, size_t len) {
+  char tmp[8];
+  int n = 0;
+
+  if (index < 0)
+    index = 0;
+
+  /* bijective base 26, least-significant letter first */
+  do {
+    tmp[n++] = 'A' + index % 26;
+    index = index / 26 - 1;
+  } while (index >= 0 && n < (int)sizeof(tmp));
+
+  int i = 0;
+  while (n > 0 && i < (int)len - 1)
+    buf[i++] = tmp[--n];
+  buf[i] = '\0';
+
+  return buf;
+}
+
 int devmap_type_to_data_type(const char *type) {
   if (!strcmp(type, "bool"))
     return DATA_TYPE_UINT8;

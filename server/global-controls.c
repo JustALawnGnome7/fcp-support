@@ -95,6 +95,12 @@ static int create_bool_mixer_outputs_controls(
   for (int i = 0; i < device->mix_output_count; i++) {
     char *name;
 
+    /* NOTE: this template comes from the ALSA map as a %c ("Talkback Mix %c
+     * Playback Switch"), so it cannot use mix_output_label() without changing
+     * the shipped map files.  Only Scarlett devices have such a control and
+     * none of them has more than 26 mixes, so the alphabet holds here.  A
+     * >26-mix device that also had one would need the template changed to %s.
+     */
     if (asprintf(&name, control_name_template, 'A' + i) < 0) {
       log_error("Cannot allocate memory for control name");
       exit(1);
