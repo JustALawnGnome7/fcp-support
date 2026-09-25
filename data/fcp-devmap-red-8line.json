@@ -4,7 +4,7 @@
   "_provenance": "Authored from Focusrite's own device descriptor and CONFIRMED against the vendor's SET_DATA writes in a black-box MMIO capture of a Red control session: air 170+i, mode 162+i, phantom 154+i, hpf 178+i, phase 186+i, stereo-link 194+i and hardware-control-enable 90+i were each matched at every index, and output gain, mute and dim wherever that session exercised them. The 16-bit gain encoding is confirmed by the value written (0xff90 = -112, the descriptor's own -112.0 dB minimum). Router pins come from the de-blobbed band-0 SET_MUX of that same capture. Clean-room: black-box observation plus published descriptors, never a vendor device map or driver.",
   "_limitations": [
     "The mic/line/inst preamp gains (130/131/132 + 3i, one byte each, commit activate 9) are DELIBERATELY ABSENT. Their offsets are confirmed, but the descriptor gives no range or dB mapping for them and none has been measured, so any min/max here would be invention -- and a wrong range on a mic preamp is not a cosmetic error. Add them once measured on hardware.",
-    "No peak-index anywhere: the GET_METER slot layout has never been observed on a Red, and the Clarett slot orders do not transfer between models, let alone between product lines. Level meters will therefore not display until this is measured with tools/fcp_meter_watch.c.",
+    "peak-index is each destination's index in the band-0 SET_MUX table of the vendor bring-up (provenance \"band0\"): the rule that reproduces all four measured Clarett layouts exactly, and confirmed on this unit by routing an input signal through every kind of destination. E.g. PCM 1 = slot 0, Monitor Output 1 = 58, Mixer Input 01 = 124, Mixer Input 32 = 155 (156 slots). Single speed only; the driver advertises 44.1/48 kHz alone on this model. The 32 Dante outputs (slots 90-121) are deliberately unmetered: the Level Meter is one ALSA control, capped at 128 values, and metering all 156 destinations would overflow it.",
     "hwGainEnable is a 2-bit field [XML] exposed as a single boolean. Only bit 0 has been seen set (the vendor wrote 1 to the monitor and headphone outputs alike); what the second bit selects is undecoded.",
     "versionStageRelease.offset is a placeholder, as on the Clarett maps, so Firmware Version shows a meaningless value. It exists because fcp-server requires the control for its socket-path TLV and lock handshake. NOTE the descriptor does place App and FPGA versions at offsets 8 and 12, but inside a firmware-upgrade segment block whose address space has not been shown to be the appspace -- unverified, so not used.",
     "notify-client masks are approximate, as on the Clarett: the Thunderbolt device does not expose the FCP notification word, so the driver relays a wildcard and every notification refreshes every control. Set here on the output gain, mute and dim -- the things a front panel can move -- and cleared on the preamp switches.",
@@ -1202,131 +1202,195 @@
     "destinations": [
       {
         "name": "Monitor Output 1",
-        "router-pin": "1024"
+        "router-pin": "1024",
+        "peak-index": 58,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "Monitor Output 2",
-        "router-pin": "1025"
+        "router-pin": "1025",
+        "peak-index": 59,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "Headphone 1 (L)",
-        "router-pin": "1026"
+        "router-pin": "1026",
+        "peak-index": 60,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "Headphone 1 (R)",
-        "router-pin": "1027"
+        "router-pin": "1027",
+        "peak-index": 61,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "Headphone 2 (L)",
-        "router-pin": "1028"
+        "router-pin": "1028",
+        "peak-index": 62,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "Headphone 2 (R)",
-        "router-pin": "1029"
+        "router-pin": "1029",
+        "peak-index": 63,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "Line Output 1",
-        "router-pin": "1030"
+        "router-pin": "1030",
+        "peak-index": 64,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "Line Output 2",
-        "router-pin": "1031"
+        "router-pin": "1031",
+        "peak-index": 65,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "Line Output 3",
-        "router-pin": "1032"
+        "router-pin": "1032",
+        "peak-index": 66,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "Line Output 4",
-        "router-pin": "1033"
+        "router-pin": "1033",
+        "peak-index": 67,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "Line Output 5",
-        "router-pin": "1034"
+        "router-pin": "1034",
+        "peak-index": 68,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "Line Output 6",
-        "router-pin": "1035"
+        "router-pin": "1035",
+        "peak-index": 69,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "Line Output 7",
-        "router-pin": "1036"
+        "router-pin": "1036",
+        "peak-index": 70,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "Line Output 8",
-        "router-pin": "1037"
+        "router-pin": "1037",
+        "peak-index": 71,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "S/PDIF Output L",
-        "router-pin": "390"
+        "router-pin": "390",
+        "peak-index": 72,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "S/PDIF Output R",
-        "router-pin": "391"
+        "router-pin": "391",
+        "peak-index": 73,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "ADAT Output 1.1",
-        "router-pin": "512"
+        "router-pin": "512",
+        "peak-index": 74,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "ADAT Output 1.2",
-        "router-pin": "513"
+        "router-pin": "513",
+        "peak-index": 75,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "ADAT Output 1.3",
-        "router-pin": "514"
+        "router-pin": "514",
+        "peak-index": 76,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "ADAT Output 1.4",
-        "router-pin": "515"
+        "router-pin": "515",
+        "peak-index": 77,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "ADAT Output 1.5",
-        "router-pin": "516"
+        "router-pin": "516",
+        "peak-index": 78,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "ADAT Output 1.6",
-        "router-pin": "517"
+        "router-pin": "517",
+        "peak-index": 79,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "ADAT Output 1.7",
-        "router-pin": "518"
+        "router-pin": "518",
+        "peak-index": 80,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "ADAT Output 1.8",
-        "router-pin": "519"
+        "router-pin": "519",
+        "peak-index": 81,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "ADAT Output 2.1",
-        "router-pin": "520"
+        "router-pin": "520",
+        "peak-index": 82,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "ADAT Output 2.2",
-        "router-pin": "521"
+        "router-pin": "521",
+        "peak-index": 83,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "ADAT Output 2.3",
-        "router-pin": "522"
+        "router-pin": "522",
+        "peak-index": 84,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "ADAT Output 2.4",
-        "router-pin": "523"
+        "router-pin": "523",
+        "peak-index": 85,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "ADAT Output 2.5",
-        "router-pin": "524"
+        "router-pin": "524",
+        "peak-index": 86,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "ADAT Output 2.6",
-        "router-pin": "525"
+        "router-pin": "525",
+        "peak-index": 87,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "ADAT Output 2.7",
-        "router-pin": "526"
+        "router-pin": "526",
+        "peak-index": 88,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "ADAT Output 2.8",
-        "router-pin": "527"
+        "router-pin": "527",
+        "peak-index": 89,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "Dante 1",
@@ -1459,402 +1523,586 @@
       {
         "name": "Mixer Input 01",
         "router-pin": "768",
-        "mixer-input-index": 0
+        "mixer-input-index": 0,
+        "peak-index": 124,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "Mixer Input 02",
         "router-pin": "769",
-        "mixer-input-index": 1
+        "mixer-input-index": 1,
+        "peak-index": 125,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "Mixer Input 03",
         "router-pin": "770",
-        "mixer-input-index": 2
+        "mixer-input-index": 2,
+        "peak-index": 126,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "Mixer Input 04",
         "router-pin": "771",
-        "mixer-input-index": 3
+        "mixer-input-index": 3,
+        "peak-index": 127,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "Mixer Input 05",
         "router-pin": "772",
-        "mixer-input-index": 4
+        "mixer-input-index": 4,
+        "peak-index": 128,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "Mixer Input 06",
         "router-pin": "773",
-        "mixer-input-index": 5
+        "mixer-input-index": 5,
+        "peak-index": 129,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "Mixer Input 07",
         "router-pin": "774",
-        "mixer-input-index": 6
+        "mixer-input-index": 6,
+        "peak-index": 130,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "Mixer Input 08",
         "router-pin": "775",
-        "mixer-input-index": 7
+        "mixer-input-index": 7,
+        "peak-index": 131,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "Mixer Input 09",
         "router-pin": "776",
-        "mixer-input-index": 8
+        "mixer-input-index": 8,
+        "peak-index": 132,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "Mixer Input 10",
         "router-pin": "777",
-        "mixer-input-index": 9
+        "mixer-input-index": 9,
+        "peak-index": 133,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "Mixer Input 11",
         "router-pin": "778",
-        "mixer-input-index": 10
+        "mixer-input-index": 10,
+        "peak-index": 134,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "Mixer Input 12",
         "router-pin": "779",
-        "mixer-input-index": 11
+        "mixer-input-index": 11,
+        "peak-index": 135,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "Mixer Input 13",
         "router-pin": "780",
-        "mixer-input-index": 12
+        "mixer-input-index": 12,
+        "peak-index": 136,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "Mixer Input 14",
         "router-pin": "781",
-        "mixer-input-index": 13
+        "mixer-input-index": 13,
+        "peak-index": 137,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "Mixer Input 15",
         "router-pin": "782",
-        "mixer-input-index": 14
+        "mixer-input-index": 14,
+        "peak-index": 138,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "Mixer Input 16",
         "router-pin": "783",
-        "mixer-input-index": 15
+        "mixer-input-index": 15,
+        "peak-index": 139,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "Mixer Input 17",
         "router-pin": "784",
-        "mixer-input-index": 16
+        "mixer-input-index": 16,
+        "peak-index": 140,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "Mixer Input 18",
         "router-pin": "785",
-        "mixer-input-index": 17
+        "mixer-input-index": 17,
+        "peak-index": 141,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "Mixer Input 19",
         "router-pin": "786",
-        "mixer-input-index": 18
+        "mixer-input-index": 18,
+        "peak-index": 142,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "Mixer Input 20",
         "router-pin": "787",
-        "mixer-input-index": 19
+        "mixer-input-index": 19,
+        "peak-index": 143,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "Mixer Input 21",
         "router-pin": "788",
-        "mixer-input-index": 20
+        "mixer-input-index": 20,
+        "peak-index": 144,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "Mixer Input 22",
         "router-pin": "789",
-        "mixer-input-index": 21
+        "mixer-input-index": 21,
+        "peak-index": 145,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "Mixer Input 23",
         "router-pin": "790",
-        "mixer-input-index": 22
+        "mixer-input-index": 22,
+        "peak-index": 146,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "Mixer Input 24",
         "router-pin": "791",
-        "mixer-input-index": 23
+        "mixer-input-index": 23,
+        "peak-index": 147,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "Mixer Input 25",
         "router-pin": "792",
-        "mixer-input-index": 24
+        "mixer-input-index": 24,
+        "peak-index": 148,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "Mixer Input 26",
         "router-pin": "793",
-        "mixer-input-index": 25
+        "mixer-input-index": 25,
+        "peak-index": 149,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "Mixer Input 27",
         "router-pin": "794",
-        "mixer-input-index": 26
+        "mixer-input-index": 26,
+        "peak-index": 150,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "Mixer Input 28",
         "router-pin": "795",
-        "mixer-input-index": 27
+        "mixer-input-index": 27,
+        "peak-index": 151,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "Mixer Input 29",
         "router-pin": "796",
-        "mixer-input-index": 28
+        "mixer-input-index": 28,
+        "peak-index": 152,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "Mixer Input 30",
         "router-pin": "797",
-        "mixer-input-index": 29
+        "mixer-input-index": 29,
+        "peak-index": 153,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "Mixer Input 31",
         "router-pin": "798",
-        "mixer-input-index": 30
+        "mixer-input-index": 30,
+        "peak-index": 154,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "Mixer Input 32",
         "router-pin": "799",
-        "mixer-input-index": 31
+        "mixer-input-index": 31,
+        "peak-index": 155,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "PCM 1",
-        "router-pin": "1536"
+        "router-pin": "1536",
+        "peak-index": 0,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "PCM 2",
-        "router-pin": "1537"
+        "router-pin": "1537",
+        "peak-index": 1,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "PCM 3",
-        "router-pin": "1538"
+        "router-pin": "1538",
+        "peak-index": 2,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "PCM 4",
-        "router-pin": "1539"
+        "router-pin": "1539",
+        "peak-index": 3,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "PCM 5",
-        "router-pin": "1540"
+        "router-pin": "1540",
+        "peak-index": 4,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "PCM 6",
-        "router-pin": "1541"
+        "router-pin": "1541",
+        "peak-index": 5,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "PCM 7",
-        "router-pin": "1542"
+        "router-pin": "1542",
+        "peak-index": 6,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "PCM 8",
-        "router-pin": "1543"
+        "router-pin": "1543",
+        "peak-index": 7,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "PCM 9",
-        "router-pin": "1544"
+        "router-pin": "1544",
+        "peak-index": 122,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "PCM 10",
-        "router-pin": "1545"
+        "router-pin": "1545",
+        "peak-index": 123,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "PCM 11",
-        "router-pin": "1546"
+        "router-pin": "1546",
+        "peak-index": 8,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "PCM 12",
-        "router-pin": "1547"
+        "router-pin": "1547",
+        "peak-index": 9,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "PCM 13",
-        "router-pin": "1548"
+        "router-pin": "1548",
+        "peak-index": 10,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "PCM 14",
-        "router-pin": "1549"
+        "router-pin": "1549",
+        "peak-index": 11,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "PCM 15",
-        "router-pin": "1550"
+        "router-pin": "1550",
+        "peak-index": 12,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "PCM 16",
-        "router-pin": "1551"
+        "router-pin": "1551",
+        "peak-index": 13,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "PCM 17",
-        "router-pin": "1552"
+        "router-pin": "1552",
+        "peak-index": 14,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "PCM 18",
-        "router-pin": "1553"
+        "router-pin": "1553",
+        "peak-index": 15,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "PCM 19",
-        "router-pin": "1554"
+        "router-pin": "1554",
+        "peak-index": 16,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "PCM 20",
-        "router-pin": "1555"
+        "router-pin": "1555",
+        "peak-index": 17,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "PCM 21",
-        "router-pin": "1556"
+        "router-pin": "1556",
+        "peak-index": 18,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "PCM 22",
-        "router-pin": "1557"
+        "router-pin": "1557",
+        "peak-index": 19,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "PCM 23",
-        "router-pin": "1558"
+        "router-pin": "1558",
+        "peak-index": 20,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "PCM 24",
-        "router-pin": "1559"
+        "router-pin": "1559",
+        "peak-index": 21,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "PCM 25",
-        "router-pin": "1560"
+        "router-pin": "1560",
+        "peak-index": 22,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "PCM 26",
-        "router-pin": "1561"
+        "router-pin": "1561",
+        "peak-index": 23,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "PCM 27",
-        "router-pin": "1562"
+        "router-pin": "1562",
+        "peak-index": 24,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "PCM 28",
-        "router-pin": "1563"
+        "router-pin": "1563",
+        "peak-index": 25,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "PCM 29",
-        "router-pin": "1564"
+        "router-pin": "1564",
+        "peak-index": 26,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "PCM 30",
-        "router-pin": "1565"
+        "router-pin": "1565",
+        "peak-index": 27,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "PCM 31",
-        "router-pin": "1566"
+        "router-pin": "1566",
+        "peak-index": 28,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "PCM 32",
-        "router-pin": "1567"
+        "router-pin": "1567",
+        "peak-index": 29,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "PCM 33",
-        "router-pin": "1568"
+        "router-pin": "1568",
+        "peak-index": 30,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "PCM 34",
-        "router-pin": "1569"
+        "router-pin": "1569",
+        "peak-index": 31,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "PCM 35",
-        "router-pin": "1570"
+        "router-pin": "1570",
+        "peak-index": 32,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "PCM 36",
-        "router-pin": "1571"
+        "router-pin": "1571",
+        "peak-index": 33,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "PCM 37",
-        "router-pin": "1572"
+        "router-pin": "1572",
+        "peak-index": 34,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "PCM 38",
-        "router-pin": "1573"
+        "router-pin": "1573",
+        "peak-index": 35,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "PCM 39",
-        "router-pin": "1574"
+        "router-pin": "1574",
+        "peak-index": 36,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "PCM 40",
-        "router-pin": "1575"
+        "router-pin": "1575",
+        "peak-index": 37,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "PCM 41",
-        "router-pin": "1576"
+        "router-pin": "1576",
+        "peak-index": 38,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "PCM 42",
-        "router-pin": "1577"
+        "router-pin": "1577",
+        "peak-index": 39,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "PCM 43",
-        "router-pin": "1578"
+        "router-pin": "1578",
+        "peak-index": 40,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "PCM 44",
-        "router-pin": "1579"
+        "router-pin": "1579",
+        "peak-index": 41,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "PCM 45",
-        "router-pin": "1580"
+        "router-pin": "1580",
+        "peak-index": 42,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "PCM 46",
-        "router-pin": "1581"
+        "router-pin": "1581",
+        "peak-index": 43,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "PCM 47",
-        "router-pin": "1582"
+        "router-pin": "1582",
+        "peak-index": 44,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "PCM 48",
-        "router-pin": "1583"
+        "router-pin": "1583",
+        "peak-index": 45,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "PCM 49",
-        "router-pin": "1584"
+        "router-pin": "1584",
+        "peak-index": 46,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "PCM 50",
-        "router-pin": "1585"
+        "router-pin": "1585",
+        "peak-index": 47,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "PCM 51",
-        "router-pin": "1586"
+        "router-pin": "1586",
+        "peak-index": 48,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "PCM 52",
-        "router-pin": "1587"
+        "router-pin": "1587",
+        "peak-index": 49,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "PCM 53",
-        "router-pin": "1588"
+        "router-pin": "1588",
+        "peak-index": 50,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "PCM 54",
-        "router-pin": "1589"
+        "router-pin": "1589",
+        "peak-index": 51,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "PCM 55",
-        "router-pin": "1590"
+        "router-pin": "1590",
+        "peak-index": 52,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "PCM 56",
-        "router-pin": "1591"
+        "router-pin": "1591",
+        "peak-index": 53,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "PCM 57",
-        "router-pin": "1592"
+        "router-pin": "1592",
+        "peak-index": 54,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "PCM 58",
-        "router-pin": "1593"
+        "router-pin": "1593",
+        "peak-index": 55,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "PCM 59",
-        "router-pin": "1594"
+        "router-pin": "1594",
+        "peak-index": 56,
+        "_peak-index-provenance": "band0"
       },
       {
         "name": "PCM 60",
-        "router-pin": "1595"
+        "router-pin": "1595",
+        "peak-index": 57,
+        "_peak-index-provenance": "band0"
       }
     ]
   },
