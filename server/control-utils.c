@@ -449,6 +449,13 @@ int write_data_control(struct fcp_device *device, struct control_props *props, i
   if (props->mask) {
     int current;
 
+    /* A switch holds 0/1, but its bit need not be bit 0: set means
+     * the whole mask (the mirror of the read path's reduction to 0/1).
+     * Without this, a switch on any higher bit always wrote 0.
+     */
+    if (props->type == SND_CTL_ELEM_TYPE_BOOLEAN)
+      value = value ? props->mask : 0;
+
     int err = read_single_data_control(
       device, props,
       props->data_type, props->offset, props->array_index,
