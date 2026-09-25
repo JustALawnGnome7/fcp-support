@@ -46,6 +46,7 @@
     }
   },
   "output-link": [],
+  "mixer-max-db": 6,
   "global-controls": {
     "versionStageRelease": {
       "name": "Firmware Version",

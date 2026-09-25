@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2024 Geoffrey D. Bennett <g@b4.vu>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <alsa/asoundlib.h>
@@ -144,7 +145,28 @@ static int write_mix_control(
   return err;
 }
 
-static const SNDRV_CTL_TLVD_DECLARE_DB_LINEAR(mix_tlv, SNDRV_CTL_TLVD_DB_GAIN_MUTE, 1200);
+/* Mixer gains are linear amplitude with unity at 8192, so the top of the range is
+ * round(8192 * 10^(max_dB / 20)). The Scarlett 4th Gen goes to +12 dB (32613); other devices
+ * stop lower, e.g. the Clarett Thunderbolt line at +6 dB (16345), and their alsa-map says so
+ * with a top-level "mixer-max-db". Without the key, the 4th Gen range applies. */
+#define MIX_UNITY          8192
+#define MIX_DEFAULT_MAX_DB 12
+
+static int get_mixer_max_db(struct fcp_device *device) {
+  struct json_object *max_db;
+
+  if (!json_object_object_get_ex(device->fam, "mixer-max-db", &max_db))
+    return MIX_DEFAULT_MAX_DB;
+
+  int db = json_object_get_int(max_db);
+  if (db < 0 || db > MIX_DEFAULT_MAX_DB) {
+    log_error("mixer-max-db %d out of range 0..%d; using %d",
+              db, MIX_DEFAULT_MAX_DB, MIX_DEFAULT_MAX_DB);
+    return MIX_DEFAULT_MAX_DB;
+  }
+
+  return db;
+}
 
 static struct json_object *find_destination_by_name(
   struct json_object *destinations,
@@ -241,6 +263,13 @@ void add_mix_controls(struct fcp_device *device) {
 
   int sink_count = json_object_array_length(sinks);
 
+  int max_db = get_mixer_max_db(device);
+  int max_value = lround(MIX_UNITY * pow(10.0, max_db / 20.0));
+  unsigned int mix_tlv[4] = {
+    SNDRV_CTL_TLVT_DB_LINEAR, 2 * sizeof(unsigned int),
+    (unsigned int)SNDRV_CTL_TLVD_DB_GAIN_MUTE, max_db * 100
+  };
+
   /* Create controls for each mix output */
   for (int i = 0; i < num_outputs; i++) {
 
@@ -296,7 +325,7 @@ void add_mix_controls(struct fcp_device *device) {
         .type          = SND_CTL_ELEM_TYPE_INTEGER,
         .category      = CATEGORY_MIX,
         .min           = 0,
-        .max           = 32613,
+        .max           = max_value,
         .step          = 1,
         .tlv           = mix_tlv,
         .read_only     = 0,
