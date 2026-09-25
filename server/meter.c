@@ -13,9 +13,10 @@
 #include "meter.h"
 #include "log.h"
 
-/* Upper bound on a peak-index, so a typo in a hand-written map is still caught. Well above any
- * plausible slot count; the Clarett 2Pre's array is 48. */
-#define METER_SLOT_LIMIT 128
+/* Upper bound on a peak-index, so a typo in a hand-written map is still caught. The hwdep meter-map
+ * ioctl accepts at most 255 slots, so that is the real ceiling; the Focusrite Red 8Line's array is
+ * 156 (the Clarett 2Pre's is 48). */
+#define METER_SLOT_LIMIT 255
 
 /* Highest peak-index in a sources/destinations array, or -1 if it has none. */
 static int max_peak_index(struct json_object *entries) {
