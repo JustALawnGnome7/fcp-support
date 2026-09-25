@@ -9,7 +9,10 @@
     "versionStageRelease.offset is a placeholder, as on the Clarett maps, so Firmware Version shows a meaningless value. It exists because fcp-server requires the control for its socket-path TLV and lock handshake. NOTE the descriptor does place App and FPGA versions at offsets 8 and 12, but inside a firmware-upgrade segment block whose address space has not been shown to be the appspace -- unverified, so not used.",
     "notify-client masks are approximate, as on the Clarett: the Thunderbolt device does not expose the FCP notification word, so the driver relays a wildcard and every notification refreshes every control. Set here on the output gain, mute and dim -- the things a front panel can move -- and cleared on the preamp switches.",
     "line-input-ref (offset 272, one bit per input, commit activate 21) is not exposed: it applies to all eight inputs but its audible effect has not been established.",
-    "The mixer matrix needs nothing from this map and comes up on its own: fcp-server reads MIX_INFO from the device and builds the gain grid, and a Red answers 32 mixes x 32 inputs. All this map supplies is mixer-input-index on the Mixer Input destinations, which is what binds each grid column to a router pin. Mixes past 26 are named AA, AB, ... (bijective base 26); fcp-server's original 'A' + i ran off the end of the alphabet into \"Mix [\", \"Mix \\\", \"Mix ]\", which GKeyFile rejects as key names -- so a client storing state in one (alsa-scarlett-gui does) silently dropped two whole mixes. Fixed in fcp-server and alsa-scarlett-gui together; a map cannot influence it either way.",
+    "The mixer matrix needs nothing from this map and comes up on its own: fcp-server reads MIX_INFO from the device and builds the gain grid, and a Red answers 32 mixes x 32 inputs. All this map supplies is mixer-input-index on the Mixer Input destinations, which is what binds each grid column to a router pin. Mixes past 26 are named AA, AB, ... (bijective base 26); fcp-server's original 'A' + i ran off the end of the alphabet into \"Mix [\", \"Mix \\\", \"Mix ]\", which GKeyFile rejects as key names -- so a client storing state in one (alsa-scarlett-gui does) silently dropped two whole mixes. The mix-bus router SOURCES are named here, by this map, and use the same letters: a bus named differently from its gain controls cannot be tied to its column.",
+    "The mixer ceiling is unknown, so there is no mixer-max-db and fcp-server's +12 dB default applies. Every SET_MIX in the one vendor capture wrote zero; a session with a fader at its top would settle it (the Clarett's is +6 dB).",
+    "Meter Source (268) comes from the descriptor alone -- the capture never wrote it. Monitor mute/dim (124) and the S/PDIF connectors (236/244) are capture-confirmed, offsets and commit activates both; the monitor knob's signed-dB field (112) is hardware-confirmed.",
+    "Outputs 1-6 (Monitor 1/2, Headphones 1, Headphones 2) take level, mute and dim from their front-panel knob group (gain 112/116/120, mute/dim 124/126/128), and have no SW/HW toggle. The device pins their own gain bytes at 0 dB: a -40 dB write to output 1 on SW read back 0. Setting a GROUP gain from software (commit activate 6 [XML]) is not yet hardware-verified, nor are the two headphone groups at all.",
     "Sources and destinations are the factory-default patch recovered from the vendor bring-up, widened to the full PCM and Mix ranges. Pins outside it may well be routable; verify on the bench before adding any (pick a destination, try the pin, confirm with GET_MUX)."
   ],
   "structs": {
@@ -31,48 +34,6 @@
           "notify-device": 1,
           "notify-client": 1,
           "_note": "per-output gain @ 24+2i, signed 16-bit dB (-112..0), 1 dB/step; commit activate 1"
-        },
-        "outMuteDim0": {
-          "offset": 68,
-          "type": "bool",
-          "notify-device": 15,
-          "notify-client": 1,
-          "_note": "output 1 mute (bit 0) and dim (bit 1) @ 68; commit activate 15"
-        },
-        "outMuteDim1": {
-          "offset": 69,
-          "type": "bool",
-          "notify-device": 15,
-          "notify-client": 1,
-          "_note": "output 2 mute (bit 0) and dim (bit 1) @ 69; commit activate 15"
-        },
-        "outMuteDim2": {
-          "offset": 70,
-          "type": "bool",
-          "notify-device": 15,
-          "notify-client": 1,
-          "_note": "output 3 mute (bit 0) and dim (bit 1) @ 70; commit activate 15"
-        },
-        "outMuteDim3": {
-          "offset": 71,
-          "type": "bool",
-          "notify-device": 15,
-          "notify-client": 1,
-          "_note": "output 4 mute (bit 0) and dim (bit 1) @ 71; commit activate 15"
-        },
-        "outMuteDim4": {
-          "offset": 72,
-          "type": "bool",
-          "notify-device": 15,
-          "notify-client": 1,
-          "_note": "output 5 mute (bit 0) and dim (bit 1) @ 72; commit activate 15"
-        },
-        "outMuteDim5": {
-          "offset": 73,
-          "type": "bool",
-          "notify-device": 15,
-          "notify-client": 1,
-          "_note": "output 6 mute (bit 0) and dim (bit 1) @ 73; commit activate 15"
         },
         "outMuteDim6": {
           "offset": 74,
@@ -199,6 +160,90 @@
           "notify-device": 13,
           "notify-client": 0,
           "_note": "preamp stereo link @ 194+i; activate 13"
+        },
+        "muteSwitch": {
+          "offset": 124,
+          "type": "uint8",
+          "notify-device": 2,
+          "notify-client": 1,
+          "_note": "monitor mute = bit 0 of @ 124 (dim is bit 1); commit activate 2"
+        },
+        "dimSwitch": {
+          "offset": 124,
+          "type": "uint8",
+          "notify-device": 2,
+          "notify-client": 1,
+          "_note": "monitor dim = bit 1 of @ 124 (mute is bit 0); commit activate 2"
+        },
+        "monitorVolume": {
+          "offset": 112,
+          "type": "int16",
+          "notify-device": 6,
+          "notify-client": 1,
+          "_note": "monitor knob gain @ 112, signed 16-bit dB -112..0 (hardware-confirmed); read-only view of grpGain0"
+        },
+        "spdifSourceInput": {
+          "offset": 244,
+          "type": "uint8",
+          "notify-device": 4,
+          "notify-client": 0,
+          "_note": "S/PDIF input connector @ 244; Optical=1/RCA=2; activate 4"
+        },
+        "spdifSourceOutput": {
+          "offset": 236,
+          "type": "uint8",
+          "notify-device": 4,
+          "notify-client": 0,
+          "_note": "S/PDIF output connector @ 236; Optical=1/RCA=2; activate 4"
+        },
+        "meterSource": {
+          "offset": 268,
+          "type": "uint8",
+          "notify-device": 14,
+          "notify-client": 0,
+          "_note": "front-panel meter-bridge source @ 268; activate 14; enum [XML], unexercised"
+        },
+        "grpGain0": {
+          "offset": 112,
+          "type": "int16",
+          "notify-device": 6,
+          "notify-client": 1,
+          "_note": "Monitor knob group gain @ 112, signed dB -112..0; commit activate 6"
+        },
+        "grpMuteDim0": {
+          "offset": 124,
+          "type": "bool",
+          "notify-device": 2,
+          "notify-client": 1,
+          "_note": "Monitor knob group mute (bit 0) / dim (bit 1) @ 124; commit activate 2"
+        },
+        "grpGain1": {
+          "offset": 116,
+          "type": "int16",
+          "notify-device": 6,
+          "notify-client": 1,
+          "_note": "Headphones 1 knob group gain @ 116, signed dB -112..0; commit activate 6"
+        },
+        "grpMuteDim1": {
+          "offset": 126,
+          "type": "bool",
+          "notify-device": 2,
+          "notify-client": 1,
+          "_note": "Headphones 1 knob group mute (bit 0) / dim (bit 1) @ 126; commit activate 2"
+        },
+        "grpGain2": {
+          "offset": 120,
+          "type": "int16",
+          "notify-device": 6,
+          "notify-client": 1,
+          "_note": "Headphones 2 knob group gain @ 120, signed dB -112..0; commit activate 6"
+        },
+        "grpMuteDim2": {
+          "offset": 128,
+          "type": "bool",
+          "notify-device": 2,
+          "notify-client": 1,
+          "_note": "Headphones 2 knob group mute (bit 0) / dim (bit 1) @ 128; commit activate 2"
         }
       }
     }
@@ -270,19 +315,15 @@
         "controls": {
           "level": {
             "index": 0,
-            "member": "outputVolume"
+            "member": "grpGain0"
           },
           "mute": {
             "index": 0,
-            "member": "outMuteDim0"
+            "member": "grpMuteDim0"
           },
           "dim": {
             "index": 1,
-            "member": "outMuteDim0"
-          },
-          "hw-gain": {
-            "index": 0,
-            "member": "hwGainEnable"
+            "member": "grpMuteDim0"
           }
         }
       },
@@ -290,20 +331,16 @@
         "name": "Monitor Output 2",
         "controls": {
           "level": {
-            "index": 1,
-            "member": "outputVolume"
+            "index": 0,
+            "member": "grpGain0"
           },
           "mute": {
             "index": 0,
-            "member": "outMuteDim1"
+            "member": "grpMuteDim0"
           },
           "dim": {
             "index": 1,
-            "member": "outMuteDim1"
-          },
-          "hw-gain": {
-            "index": 1,
-            "member": "hwGainEnable"
+            "member": "grpMuteDim0"
           }
         }
       },
@@ -311,20 +348,16 @@
         "name": "Headphone 1 (L)",
         "controls": {
           "level": {
-            "index": 2,
-            "member": "outputVolume"
+            "index": 0,
+            "member": "grpGain1"
           },
           "mute": {
             "index": 0,
-            "member": "outMuteDim2"
+            "member": "grpMuteDim1"
           },
           "dim": {
             "index": 1,
-            "member": "outMuteDim2"
-          },
-          "hw-gain": {
-            "index": 2,
-            "member": "hwGainEnable"
+            "member": "grpMuteDim1"
           }
         }
       },
@@ -332,20 +365,16 @@
         "name": "Headphone 1 (R)",
         "controls": {
           "level": {
-            "index": 3,
-            "member": "outputVolume"
+            "index": 0,
+            "member": "grpGain1"
           },
           "mute": {
             "index": 0,
-            "member": "outMuteDim3"
+            "member": "grpMuteDim1"
           },
           "dim": {
             "index": 1,
-            "member": "outMuteDim3"
-          },
-          "hw-gain": {
-            "index": 3,
-            "member": "hwGainEnable"
+            "member": "grpMuteDim1"
           }
         }
       },
@@ -353,20 +382,16 @@
         "name": "Headphone 2 (L)",
         "controls": {
           "level": {
-            "index": 4,
-            "member": "outputVolume"
+            "index": 0,
+            "member": "grpGain2"
           },
           "mute": {
             "index": 0,
-            "member": "outMuteDim4"
+            "member": "grpMuteDim2"
           },
           "dim": {
             "index": 1,
-            "member": "outMuteDim4"
-          },
-          "hw-gain": {
-            "index": 4,
-            "member": "hwGainEnable"
+            "member": "grpMuteDim2"
           }
         }
       },
@@ -374,20 +399,16 @@
         "name": "Headphone 2 (R)",
         "controls": {
           "level": {
-            "index": 5,
-            "member": "outputVolume"
+            "index": 0,
+            "member": "grpGain2"
           },
           "mute": {
             "index": 0,
-            "member": "outMuteDim5"
+            "member": "grpMuteDim2"
           },
           "dim": {
             "index": 1,
-            "member": "outMuteDim5"
-          },
-          "hw-gain": {
-            "index": 5,
-            "member": "hwGainEnable"
+            "member": "grpMuteDim2"
           }
         }
       },
@@ -562,36 +583,36 @@
     ],
     "sources": [
       {
-        "name": "Line 4",
-        "router-pin": "1024"
-      },
-      {
-        "name": "Line 3",
-        "router-pin": "1025"
+        "name": "Analogue 1",
+        "router-pin": "1027"
       },
       {
         "name": "Analogue 2",
         "router-pin": "1026"
       },
       {
-        "name": "Analogue 1",
-        "router-pin": "1027"
+        "name": "Line 3",
+        "router-pin": "1025"
       },
       {
-        "name": "Line 8",
-        "router-pin": "1028"
+        "name": "Line 4",
+        "router-pin": "1024"
       },
       {
-        "name": "Line 7",
-        "router-pin": "1029"
+        "name": "Line 5",
+        "router-pin": "1031"
       },
       {
         "name": "Line 6",
         "router-pin": "1030"
       },
       {
-        "name": "Line 5",
-        "router-pin": "1031"
+        "name": "Line 7",
+        "router-pin": "1029"
+      },
+      {
+        "name": "Line 8",
+        "router-pin": "1028"
       },
       {
         "name": "S/PDIF L",
@@ -666,6 +687,134 @@
         "router-pin": "527"
       },
       {
+        "name": "Dante 1",
+        "router-pin": "2048"
+      },
+      {
+        "name": "Dante 2",
+        "router-pin": "2049"
+      },
+      {
+        "name": "Dante 3",
+        "router-pin": "2050"
+      },
+      {
+        "name": "Dante 4",
+        "router-pin": "2051"
+      },
+      {
+        "name": "Dante 5",
+        "router-pin": "2052"
+      },
+      {
+        "name": "Dante 6",
+        "router-pin": "2053"
+      },
+      {
+        "name": "Dante 7",
+        "router-pin": "2054"
+      },
+      {
+        "name": "Dante 8",
+        "router-pin": "2055"
+      },
+      {
+        "name": "Dante 9",
+        "router-pin": "2056"
+      },
+      {
+        "name": "Dante 10",
+        "router-pin": "2057"
+      },
+      {
+        "name": "Dante 11",
+        "router-pin": "2058"
+      },
+      {
+        "name": "Dante 12",
+        "router-pin": "2059"
+      },
+      {
+        "name": "Dante 13",
+        "router-pin": "2060"
+      },
+      {
+        "name": "Dante 14",
+        "router-pin": "2061"
+      },
+      {
+        "name": "Dante 15",
+        "router-pin": "2062"
+      },
+      {
+        "name": "Dante 16",
+        "router-pin": "2063"
+      },
+      {
+        "name": "Dante 17",
+        "router-pin": "2064"
+      },
+      {
+        "name": "Dante 18",
+        "router-pin": "2065"
+      },
+      {
+        "name": "Dante 19",
+        "router-pin": "2066"
+      },
+      {
+        "name": "Dante 20",
+        "router-pin": "2067"
+      },
+      {
+        "name": "Dante 21",
+        "router-pin": "2068"
+      },
+      {
+        "name": "Dante 22",
+        "router-pin": "2069"
+      },
+      {
+        "name": "Dante 23",
+        "router-pin": "2070"
+      },
+      {
+        "name": "Dante 24",
+        "router-pin": "2071"
+      },
+      {
+        "name": "Dante 25",
+        "router-pin": "2072"
+      },
+      {
+        "name": "Dante 26",
+        "router-pin": "2073"
+      },
+      {
+        "name": "Dante 27",
+        "router-pin": "2074"
+      },
+      {
+        "name": "Dante 28",
+        "router-pin": "2075"
+      },
+      {
+        "name": "Dante 29",
+        "router-pin": "2076"
+      },
+      {
+        "name": "Dante 30",
+        "router-pin": "2077"
+      },
+      {
+        "name": "Dante 31",
+        "router-pin": "2078"
+      },
+      {
+        "name": "Dante 32",
+        "router-pin": "2079"
+      },
+      {
         "name": "Mix A",
         "router-pin": "768"
       },
@@ -728,6 +877,70 @@
       {
         "name": "Mix P",
         "router-pin": "783"
+      },
+      {
+        "name": "Mix Q",
+        "router-pin": "784"
+      },
+      {
+        "name": "Mix R",
+        "router-pin": "785"
+      },
+      {
+        "name": "Mix S",
+        "router-pin": "786"
+      },
+      {
+        "name": "Mix T",
+        "router-pin": "787"
+      },
+      {
+        "name": "Mix U",
+        "router-pin": "788"
+      },
+      {
+        "name": "Mix V",
+        "router-pin": "789"
+      },
+      {
+        "name": "Mix W",
+        "router-pin": "790"
+      },
+      {
+        "name": "Mix X",
+        "router-pin": "791"
+      },
+      {
+        "name": "Mix Y",
+        "router-pin": "792"
+      },
+      {
+        "name": "Mix Z",
+        "router-pin": "793"
+      },
+      {
+        "name": "Mix AA",
+        "router-pin": "794"
+      },
+      {
+        "name": "Mix AB",
+        "router-pin": "795"
+      },
+      {
+        "name": "Mix AC",
+        "router-pin": "796"
+      },
+      {
+        "name": "Mix AD",
+        "router-pin": "797"
+      },
+      {
+        "name": "Mix AE",
+        "router-pin": "798"
+      },
+      {
+        "name": "Mix AF",
+        "router-pin": "799"
       },
       {
         "name": "PCM 1",
@@ -858,70 +1071,6 @@
         "router-pin": "1567"
       },
       {
-        "name": "Mix Q",
-        "router-pin": "784"
-      },
-      {
-        "name": "Mix R",
-        "router-pin": "785"
-      },
-      {
-        "name": "Mix S",
-        "router-pin": "786"
-      },
-      {
-        "name": "Mix T",
-        "router-pin": "787"
-      },
-      {
-        "name": "Mix U",
-        "router-pin": "788"
-      },
-      {
-        "name": "Mix V",
-        "router-pin": "789"
-      },
-      {
-        "name": "Mix W",
-        "router-pin": "790"
-      },
-      {
-        "name": "Mix X",
-        "router-pin": "791"
-      },
-      {
-        "name": "Mix Y",
-        "router-pin": "792"
-      },
-      {
-        "name": "Mix Z",
-        "router-pin": "793"
-      },
-      {
-        "name": "Mix [",
-        "router-pin": "794"
-      },
-      {
-        "name": "Mix \\",
-        "router-pin": "795"
-      },
-      {
-        "name": "Mix ]",
-        "router-pin": "796"
-      },
-      {
-        "name": "Mix ^",
-        "router-pin": "797"
-      },
-      {
-        "name": "Mix _",
-        "router-pin": "798"
-      },
-      {
-        "name": "Mix `",
-        "router-pin": "799"
-      },
-      {
         "name": "PCM 33",
         "router-pin": "1568"
       },
@@ -1048,6 +1197,136 @@
       {
         "name": "PCM 64",
         "router-pin": "1599"
+      }
+    ],
+    "destinations": [
+      {
+        "name": "Monitor Output 1",
+        "router-pin": "1024"
+      },
+      {
+        "name": "Monitor Output 2",
+        "router-pin": "1025"
+      },
+      {
+        "name": "Headphone 1 (L)",
+        "router-pin": "1026"
+      },
+      {
+        "name": "Headphone 1 (R)",
+        "router-pin": "1027"
+      },
+      {
+        "name": "Headphone 2 (L)",
+        "router-pin": "1028"
+      },
+      {
+        "name": "Headphone 2 (R)",
+        "router-pin": "1029"
+      },
+      {
+        "name": "Line Output 1",
+        "router-pin": "1030"
+      },
+      {
+        "name": "Line Output 2",
+        "router-pin": "1031"
+      },
+      {
+        "name": "Line Output 3",
+        "router-pin": "1032"
+      },
+      {
+        "name": "Line Output 4",
+        "router-pin": "1033"
+      },
+      {
+        "name": "Line Output 5",
+        "router-pin": "1034"
+      },
+      {
+        "name": "Line Output 6",
+        "router-pin": "1035"
+      },
+      {
+        "name": "Line Output 7",
+        "router-pin": "1036"
+      },
+      {
+        "name": "Line Output 8",
+        "router-pin": "1037"
+      },
+      {
+        "name": "S/PDIF Output L",
+        "router-pin": "390"
+      },
+      {
+        "name": "S/PDIF Output R",
+        "router-pin": "391"
+      },
+      {
+        "name": "ADAT Output 1.1",
+        "router-pin": "512"
+      },
+      {
+        "name": "ADAT Output 1.2",
+        "router-pin": "513"
+      },
+      {
+        "name": "ADAT Output 1.3",
+        "router-pin": "514"
+      },
+      {
+        "name": "ADAT Output 1.4",
+        "router-pin": "515"
+      },
+      {
+        "name": "ADAT Output 1.5",
+        "router-pin": "516"
+      },
+      {
+        "name": "ADAT Output 1.6",
+        "router-pin": "517"
+      },
+      {
+        "name": "ADAT Output 1.7",
+        "router-pin": "518"
+      },
+      {
+        "name": "ADAT Output 1.8",
+        "router-pin": "519"
+      },
+      {
+        "name": "ADAT Output 2.1",
+        "router-pin": "520"
+      },
+      {
+        "name": "ADAT Output 2.2",
+        "router-pin": "521"
+      },
+      {
+        "name": "ADAT Output 2.3",
+        "router-pin": "522"
+      },
+      {
+        "name": "ADAT Output 2.4",
+        "router-pin": "523"
+      },
+      {
+        "name": "ADAT Output 2.5",
+        "router-pin": "524"
+      },
+      {
+        "name": "ADAT Output 2.6",
+        "router-pin": "525"
+      },
+      {
+        "name": "ADAT Output 2.7",
+        "router-pin": "526"
+      },
+      {
+        "name": "ADAT Output 2.8",
+        "router-pin": "527"
       },
       {
         "name": "Dante 1",
@@ -1176,120 +1455,6 @@
       {
         "name": "Dante 32",
         "router-pin": "2079"
-      }
-    ],
-    "destinations": [
-      {
-        "name": "Line Output 3",
-        "router-pin": "1032"
-      },
-      {
-        "name": "Line Output 4",
-        "router-pin": "1033"
-      },
-      {
-        "name": "Monitor Output 1",
-        "router-pin": "1024"
-      },
-      {
-        "name": "Monitor Output 2",
-        "router-pin": "1025"
-      },
-      {
-        "name": "Headphone 1 (L)",
-        "router-pin": "1026"
-      },
-      {
-        "name": "Headphone 1 (R)",
-        "router-pin": "1027"
-      },
-      {
-        "name": "Headphone 2 (L)",
-        "router-pin": "1028"
-      },
-      {
-        "name": "Headphone 2 (R)",
-        "router-pin": "1029"
-      },
-      {
-        "name": "Line Output 1",
-        "router-pin": "1030"
-      },
-      {
-        "name": "Line Output 2",
-        "router-pin": "1031"
-      },
-      {
-        "name": "S/PDIF Output L",
-        "router-pin": "390"
-      },
-      {
-        "name": "S/PDIF Output R",
-        "router-pin": "391"
-      },
-      {
-        "name": "ADAT Output 1.1",
-        "router-pin": "512"
-      },
-      {
-        "name": "ADAT Output 1.2",
-        "router-pin": "513"
-      },
-      {
-        "name": "ADAT Output 1.3",
-        "router-pin": "514"
-      },
-      {
-        "name": "ADAT Output 1.4",
-        "router-pin": "515"
-      },
-      {
-        "name": "ADAT Output 1.5",
-        "router-pin": "516"
-      },
-      {
-        "name": "ADAT Output 1.6",
-        "router-pin": "517"
-      },
-      {
-        "name": "ADAT Output 1.7",
-        "router-pin": "518"
-      },
-      {
-        "name": "ADAT Output 1.8",
-        "router-pin": "519"
-      },
-      {
-        "name": "ADAT Output 2.1",
-        "router-pin": "520"
-      },
-      {
-        "name": "ADAT Output 2.2",
-        "router-pin": "521"
-      },
-      {
-        "name": "ADAT Output 2.3",
-        "router-pin": "522"
-      },
-      {
-        "name": "ADAT Output 2.4",
-        "router-pin": "523"
-      },
-      {
-        "name": "ADAT Output 2.5",
-        "router-pin": "524"
-      },
-      {
-        "name": "ADAT Output 2.6",
-        "router-pin": "525"
-      },
-      {
-        "name": "ADAT Output 2.7",
-        "router-pin": "526"
-      },
-      {
-        "name": "ADAT Output 2.8",
-        "router-pin": "527"
       },
       {
         "name": "Mixer Input 01",
@@ -1580,22 +1745,6 @@
         "router-pin": "1567"
       },
       {
-        "name": "Line Output 5",
-        "router-pin": "1034"
-      },
-      {
-        "name": "Line Output 6",
-        "router-pin": "1035"
-      },
-      {
-        "name": "Line Output 7",
-        "router-pin": "1036"
-      },
-      {
-        "name": "Line Output 8",
-        "router-pin": "1037"
-      },
-      {
         "name": "PCM 33",
         "router-pin": "1568"
       },
@@ -1706,134 +1855,6 @@
       {
         "name": "PCM 60",
         "router-pin": "1595"
-      },
-      {
-        "name": "Dante 1",
-        "router-pin": "2048"
-      },
-      {
-        "name": "Dante 2",
-        "router-pin": "2049"
-      },
-      {
-        "name": "Dante 3",
-        "router-pin": "2050"
-      },
-      {
-        "name": "Dante 4",
-        "router-pin": "2051"
-      },
-      {
-        "name": "Dante 5",
-        "router-pin": "2052"
-      },
-      {
-        "name": "Dante 6",
-        "router-pin": "2053"
-      },
-      {
-        "name": "Dante 7",
-        "router-pin": "2054"
-      },
-      {
-        "name": "Dante 8",
-        "router-pin": "2055"
-      },
-      {
-        "name": "Dante 9",
-        "router-pin": "2056"
-      },
-      {
-        "name": "Dante 10",
-        "router-pin": "2057"
-      },
-      {
-        "name": "Dante 11",
-        "router-pin": "2058"
-      },
-      {
-        "name": "Dante 12",
-        "router-pin": "2059"
-      },
-      {
-        "name": "Dante 13",
-        "router-pin": "2060"
-      },
-      {
-        "name": "Dante 14",
-        "router-pin": "2061"
-      },
-      {
-        "name": "Dante 15",
-        "router-pin": "2062"
-      },
-      {
-        "name": "Dante 16",
-        "router-pin": "2063"
-      },
-      {
-        "name": "Dante 17",
-        "router-pin": "2064"
-      },
-      {
-        "name": "Dante 18",
-        "router-pin": "2065"
-      },
-      {
-        "name": "Dante 19",
-        "router-pin": "2066"
-      },
-      {
-        "name": "Dante 20",
-        "router-pin": "2067"
-      },
-      {
-        "name": "Dante 21",
-        "router-pin": "2068"
-      },
-      {
-        "name": "Dante 22",
-        "router-pin": "2069"
-      },
-      {
-        "name": "Dante 23",
-        "router-pin": "2070"
-      },
-      {
-        "name": "Dante 24",
-        "router-pin": "2071"
-      },
-      {
-        "name": "Dante 25",
-        "router-pin": "2072"
-      },
-      {
-        "name": "Dante 26",
-        "router-pin": "2073"
-      },
-      {
-        "name": "Dante 27",
-        "router-pin": "2074"
-      },
-      {
-        "name": "Dante 28",
-        "router-pin": "2075"
-      },
-      {
-        "name": "Dante 29",
-        "router-pin": "2076"
-      },
-      {
-        "name": "Dante 30",
-        "router-pin": "2077"
-      },
-      {
-        "name": "Dante 31",
-        "router-pin": "2078"
-      },
-      {
-        "name": "Dante 32",
-        "router-pin": "2079"
       }
     ]
   },
