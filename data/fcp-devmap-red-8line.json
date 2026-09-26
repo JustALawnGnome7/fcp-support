@@ -12,7 +12,7 @@
     "The mixer matrix needs nothing from this map and comes up on its own: fcp-server reads MIX_INFO from the device and builds the gain grid, and a Red answers 32 mixes x 32 inputs. All this map supplies is mixer-input-index on the Mixer Input destinations, which is what binds each grid column to a router pin. Mixes past 26 are named AA, AB, ... (bijective base 26); fcp-server's original 'A' + i ran off the end of the alphabet into \"Mix [\", \"Mix \\\", \"Mix ]\", which GKeyFile rejects as key names -- so a client storing state in one (alsa-scarlett-gui does) silently dropped two whole mixes. The mix-bus router SOURCES are named here, by this map, and use the same letters: a bus named differently from its gain controls cannot be tied to its column.",
     "The mixer ceiling is unknown, so there is no mixer-max-db and fcp-server's +12 dB default applies. Every SET_MIX in the one vendor capture wrote zero; a session with a fader at its top would settle it (the Clarett's is +6 dB).",
     "Meter Source (268) comes from the descriptor -- the capture never wrote it -- but a write from the GUI moves the front panel's selection, and the front panel's own button steps through Analogue Inputs/Outputs and ADAT Inputs/Outputs 1-8 as 0/2/6/8 with matching labels (hardware-confirmed). The other values (S/PDIF, ADAT 9-16, Dante) are the descriptor's word alone; the button does not reach them. Being front-panel settable, it is re-read on notification. Monitor mute/dim (124) and the S/PDIF connectors (236/244) are capture-confirmed, offsets and commit activates both; the monitor knob's signed-dB field (112) is hardware-confirmed.",
-    "Outputs 1-6 (Monitor 1/2, Headphones 1, Headphones 2) take level, mute and dim from their front-panel knob group (gain 112/116/120, mute/dim 124/126/128), and have no SW/HW toggle. The device pins their own gain bytes at 0 dB: a -40 dB write to output 1 on SW read back 0. Setting a GROUP gain from software (commit activate 6 [XML]) is not yet hardware-verified, nor are the two headphone groups at all.",
+    "Outputs 1-6 (Monitor 1/2, Headphones 1, Headphones 2) take level, mute and dim from their knob group (gain 112/116/120, mute/dim 124/126/128; one encoder, whose group the front panel's buttons select), and have no SW/HW toggle. The device pins their own gain bytes at 0 dB: a -40 dB write to output 1 reads straight back as 0 with its hardware-control byte at 0 (hardware-measured). So every grouped output's fader drives its group gain (the pair move together), mute/dim exist once per headphone group, on its L output, and the Monitor group's mute/dim are the global Mute/Dim. A HW-mode line output follows the Monitor group, so it cannot be split from the Monitor fader. Group gains and mute/dim written from software are hardware-confirmed.",
     "Sources and destinations are the factory-default patch recovered from the vendor bring-up, widened to the full PCM and Mix ranges. Pins outside it may well be routable; verify on the bench before adding any (pick a destination, try the pin, confirm with GET_MUX)."
   ],
   "structs": {
@@ -99,7 +99,7 @@
           ],
           "notify-device": 3,
           "notify-client": 0,
-          "_note": "per-output hardware-control enable @ 90+i; the field is 2 bits wide [XML] but only bit 0 has been observed set (value 1); commit activate 3"
+          "_note": "per-output hardware-control @ 90+i, 2 bits [XML], commit activate 3. Measured on a line output: 0 = SW; a written 1 is stored as 2; 2 = HW (its gain tracks the Monitor group exactly); 3 is kept but follows no group (the level holds). Exposed as a bool: SW = 0, HW = 1, read back as any non-zero"
         },
         "phantom": {
           "offset": 154,
@@ -174,13 +174,6 @@
           "notify-device": 2,
           "notify-client": 1,
           "_note": "monitor dim = bit 1 of @ 124 (mute is bit 0); commit activate 2"
-        },
-        "monitorVolume": {
-          "offset": 112,
-          "type": "int16",
-          "notify-device": 6,
-          "notify-client": 1,
-          "_note": "monitor knob gain @ 112, signed 16-bit dB -112..0 (hardware-confirmed); read-only view of grpGain0"
         },
         "spdifSourceInput": {
           "offset": 244,
@@ -316,14 +309,6 @@
           "level": {
             "index": 0,
             "member": "grpGain0"
-          },
-          "mute": {
-            "index": 0,
-            "member": "grpMuteDim0"
-          },
-          "dim": {
-            "index": 1,
-            "member": "grpMuteDim0"
           }
         }
       },
@@ -333,14 +318,6 @@
           "level": {
             "index": 0,
             "member": "grpGain0"
-          },
-          "mute": {
-            "index": 0,
-            "member": "grpMuteDim0"
-          },
-          "dim": {
-            "index": 1,
-            "member": "grpMuteDim0"
           }
         }
       },
@@ -367,14 +344,6 @@
           "level": {
             "index": 0,
             "member": "grpGain1"
-          },
-          "mute": {
-            "index": 0,
-            "member": "grpMuteDim1"
-          },
-          "dim": {
-            "index": 1,
-            "member": "grpMuteDim1"
           }
         }
       },
@@ -401,14 +370,6 @@
           "level": {
             "index": 0,
             "member": "grpGain2"
-          },
-          "mute": {
-            "index": 0,
-            "member": "grpMuteDim2"
-          },
-          "dim": {
-            "index": 1,
-            "member": "grpMuteDim2"
           }
         }
       },

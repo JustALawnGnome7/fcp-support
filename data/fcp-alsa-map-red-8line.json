@@ -80,15 +80,6 @@
       "type": "bool",
       "mask": 2
     },
-    "monitorVolume": {
-      "name": "Master HW Playback Volume",
-      "type": "int",
-      "access": "readonly",
-      "min": -112,
-      "max": 0,
-      "db-min": -112,
-      "db-max": 0
-    },
     "meterSource": {
       "name": "Meter Source Enum",
       "type": "enum",
