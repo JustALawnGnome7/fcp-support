@@ -84,6 +84,13 @@ struct control_props {
   int    component_count;  // >0 for multi-component controls
   int   *offsets;          // offsets of each component
   int   *data_types;       // types of each component
+  /* Further members that receive the same value whenever the control is written (the map's
+   * "mirror" list). For one setting the device stores in more than one field, e.g. the Clarett
+   * and Red S/PDIF connector, which the vendor's descriptor backs with an input AND an output
+   * field. Reads come from the control's own member only. */
+  int    mirror_count;
+  int   *mirror_offsets;
+  int   *mirror_data_types;
   int    size;             // for BYTES controls
   int    value;
   void  *bytes_value;      // for BYTES controls - stores current value

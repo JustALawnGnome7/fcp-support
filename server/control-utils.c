@@ -482,7 +482,32 @@ int write_data_control(struct fcp_device *device, struct control_props *props, i
   }
 
   int offset = props->offset + props->array_index * width;
-  return fcp_data_write(device->hwdep, offset, width, value);
+  int err = fcp_data_write(device->hwdep, offset, width, value);
+  if (err < 0)
+    return err;
+
+  /* The same value into each mirror member (never masked: the map
+   * parser refuses a mask with a mirror). The caller's single commit
+   * covers them all.
+   */
+  for (int i = 0; i < props->mirror_count; i++) {
+    int type = props->mirror_data_types[i];
+    int mirror_width =
+      type == DATA_TYPE_UINT8  || type == DATA_TYPE_INT8  ? 1 :
+      type == DATA_TYPE_UINT16 || type == DATA_TYPE_INT16 ? 2 :
+      type == DATA_TYPE_UINT32                            ? 4 : 0;
+
+    if (!mirror_width) {
+      log_error("Invalid mirror data type %d for control %s", type, props->name);
+      return -1;
+    }
+    err = fcp_data_write(
+      device->hwdep, props->mirror_offsets[i], mirror_width, value
+    );
+    if (err < 0)
+      return err;
+  }
+  return 0;
 }
 
 int read_bitmap_data_control(

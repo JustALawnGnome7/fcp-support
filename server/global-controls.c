@@ -277,6 +277,47 @@ static int create_global_control(
   if (json_object_object_get_ex(control_config, "mask", &mask))
     props.mask = json_object_get_int(mask);
 
+  /* Optional mirror members: written with the same value as the
+   * control's own member, for a setting the device stores twice
+   */
+  struct json_object *mirror;
+  if (json_object_object_get_ex(control_config, "mirror", &mirror)) {
+    int count = json_object_array_length(mirror);
+
+    if (props.component_count || props.mask || count < 1) {
+      log_error(
+        "Invalid mirror for %s (needs a single, unmasked member)",
+        member_path
+      );
+      return -1;
+    }
+
+    props.mirror_offsets = calloc(count, sizeof(int));
+    props.mirror_data_types = calloc(count, sizeof(int));
+    if (!props.mirror_offsets || !props.mirror_data_types) {
+      log_error("Cannot allocate memory for mirror offsets");
+      exit(1);
+    }
+
+    for (int i = 0; i < count; i++) {
+      struct json_object *mirror_member;
+      const char *mirror_type;
+      int offset;
+      const char *path = json_object_get_string(json_object_array_get_idx(mirror, i));
+
+      /* A whole member, resolved like the control's own (natural width) */
+      if (find_member_by_path(
+            device, path, &mirror_member, &mirror_type, &offset, false
+          ) < 0) {
+        log_error("Cannot find mirror member %s for %s", path, member_path);
+        return -1;
+      }
+      props.mirror_offsets[i] = offset;
+      props.mirror_data_types[i] = devmap_type_to_data_type(mirror_type);
+    }
+    props.mirror_count = count;
+  }
+
   struct json_object *save;
   if (json_object_object_get_ex(control_config, "save", &save) &&
       json_object_get_boolean(save)) {

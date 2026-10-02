@@ -162,20 +162,9 @@
           "name": "RCA",
           "value": 2
         }
-      ]
-    },
-    "spdifSourceOutput": {
-      "name": "S/PDIF Source Playback Enum",
-      "type": "enum",
-      "values": [
-        {
-          "name": "Optical",
-          "value": 1
-        },
-        {
-          "name": "RCA",
-          "value": 2
-        }
+      ],
+      "mirror": [
+        "spdifSourceOutput"
       ]
     }
   },
