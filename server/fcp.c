@@ -742,7 +742,7 @@ int fcp_flash_read(
   return err;
 }
 
-/* Read the sync status */
+/* Read the sync status word, raw (non-negative), or a negative error */
 int fcp_sync_read(snd_hwdep_t *hwdep) {
   uint32_t buf = 0;
 
@@ -758,7 +758,7 @@ int fcp_sync_read(snd_hwdep_t *hwdep) {
     return err;
   }
 
-  return !!le32toh(buf);
+  return le32toh(buf) & 0x7fffffff;
 }
 
 /* Start ESP DFU */

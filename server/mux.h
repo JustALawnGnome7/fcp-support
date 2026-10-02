@@ -20,6 +20,14 @@ struct mux_cache {
   const char **input_names;
   uint16_t    *input_router_pin;
 
+  /* Array size input_count * 3: the input's router pin at each rate
+   * (input_num * 3 + rate), 0 if the input does not exist at that rate.
+   * Usually the same pin at every rate; a map's router-pin-m/-h say
+   * otherwise where S/MUX renumbers a port (e.g. a second ADAT port
+   * taking over the first port's pins at double and quad speed).
+   */
+  uint16_t    *input_router_pin_rate;
+
   /* Number of outputs */
   int output_count;
 

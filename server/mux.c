@@ -25,7 +25,9 @@ void invalidate_mux_cache(struct fcp_device *device) {
 static void add_input_name(
   struct mux_cache *cache,
   const char       *name,
-  int               router_pin
+  int               router_pin,
+  int               router_pin_m,
+  int               router_pin_h
 ) {
   cache->input_names = realloc(
     cache->input_names,
@@ -45,9 +47,40 @@ static void add_input_name(
     exit(1);
   }
 
+  cache->input_router_pin_rate = realloc(
+    cache->input_router_pin_rate,
+    (cache->input_count + 1) * 3 * sizeof(uint16_t)
+  );
+  if (!cache->input_router_pin_rate) {
+    log_error("Cannot allocate memory for input router pins");
+    exit(1);
+  }
+
   cache->input_names[cache->input_count] = name;
   cache->input_router_pin[cache->input_count] = router_pin;
+  cache->input_router_pin_rate[cache->input_count * 3 + 0] = router_pin;
+  cache->input_router_pin_rate[cache->input_count * 3 + 1] = router_pin_m;
+  cache->input_router_pin_rate[cache->input_count * 3 + 2] = router_pin_h;
   cache->input_count++;
+}
+
+/* A source's or destination's router pin at a rate: its "router-pin-m"
+ * (rate 1) or "router-pin-h" (rate 2) if the map gives one -- 0 means it
+ * does not exist at that rate -- otherwise the same pin at every rate.
+ */
+static int router_pin_at_rate(struct json_object *entry, int rate, int router_pin) {
+  struct json_object *pin_json;
+  const char *key = rate == 1 ? "router-pin-m" : "router-pin-h";
+
+  if (!rate || !json_object_object_get_ex(entry, key, &pin_json))
+    return router_pin;
+
+  int pin = atoi(json_object_get_string(pin_json));
+  if (pin < 0 || pin > 0xFFF) {
+    log_error("Invalid %s %d", key, pin);
+    return 0;
+  }
+  return pin;
 }
 
 static void init_mux_cache(struct fcp_device *device) {
@@ -76,7 +109,7 @@ static void init_mux_cache(struct fcp_device *device) {
 
   invalidate_mux_cache(device);
 
-  add_input_name(cache, "Off", 0);
+  add_input_name(cache, "Off", 0, 0, 0);
 
   /* List of sources in the control config */
   struct json_object *control_sources;
@@ -143,7 +176,11 @@ static void init_mux_cache(struct fcp_device *device) {
         return;
       }
 
-      add_input_name(cache, alsa_name, router_pin);
+      add_input_name(
+        cache, alsa_name, router_pin,
+        router_pin_at_rate(devmap_source, 1, router_pin),
+        router_pin_at_rate(devmap_source, 2, router_pin)
+      );
     }
   }
 }
@@ -157,6 +194,7 @@ void free_mux_cache(struct fcp_device *device) {
   for (int i = 0; i < 3; i++)
     free(cache->values[i]);
 
+  free(cache->input_router_pin_rate);
   free(cache);
 
   device->mux_cache = NULL;
@@ -234,9 +272,12 @@ static int write_mux_control(
   int                   value
 ) {
   struct mux_cache *cache = device->mux_cache;
-  int router_pin = cache->input_router_pin[value];
 
   for (int rate = 0; rate < 3; rate++) {
+    /* The source's pin at THIS rate: S/MUX can renumber it, or remove it
+     * (0, which routes Off there). */
+    int router_pin = cache->input_router_pin_rate[value * 3 + rate];
+
     if (cache->output_fixed_input[props->offset] >= 0) {
       log_error("Cannot write to fixed input %s", props->name);
       return -EINVAL;
@@ -477,8 +518,13 @@ void add_mux_controls(struct fcp_device *device) {
         for (int rate = 0; rate < 3; rate++) {
           int router_slot = -1;
 
-          for (int k = 0; k < mux_size[rate]; k++) {
-            if ((values[rate][k] & 0xFFF) == router_pin) {
+          /* Look the destination up under its pin at THIS rate: S/MUX can
+           * renumber it, and a pin it no longer has may belong to another
+           * destination there. 0 = absent at this rate: no slot. */
+          int rate_pin = router_pin_at_rate(dest, rate, router_pin);
+
+          for (int k = 0; rate_pin && k < mux_size[rate]; k++) {
+            if ((values[rate][k] & 0xFFF) == rate_pin) {
               router_slot = k;
               break;
             }
