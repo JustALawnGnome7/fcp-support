@@ -209,7 +209,7 @@ static int read_single_data_control(
 
   return fcp_data_read(
     device->hwdep,
-    offset + props->array_index * width,
+    offset + array_index * width,
     width,
     is_signed,
     value
@@ -341,13 +341,50 @@ fail:
   return -1;
 }
 
+/* The element of the member a control addresses right now: its own array_index, moved along by
+ * the selector for a control with one (see select_count in struct control_props).
+ */
+static int data_control_index(
+  struct fcp_device    *device,
+  struct control_props *props,
+  int                  *index
+) {
+  int selector, width, err;
+
+  *index = props->array_index;
+  if (!props->select_count)
+    return 0;
+
+  width = props->select_data_type == DATA_TYPE_UINT8  ||
+          props->select_data_type == DATA_TYPE_INT8   ? 1 :
+          props->select_data_type == DATA_TYPE_UINT16 ||
+          props->select_data_type == DATA_TYPE_INT16  ? 2 : 4;
+
+  err = fcp_data_read(
+    device->hwdep, props->select_offset, width,
+    props->select_data_type & 1, &selector
+  );
+  if (err < 0)
+    return err;
+
+  if (selector < 0 || selector >= props->select_count)
+    selector = 0;
+
+  *index += props->select_stride * selector;
+  return 0;
+}
+
 int read_data_control(struct fcp_device *device, struct control_props *props, int *value) {
   if (!props->component_count) {
-    int read_value, err;
+    int read_value, index, err;
+
+    err = data_control_index(device, props, &index);
+    if (err < 0)
+      return err;
 
     err = read_single_data_control(
       device, props,
-      props->data_type, props->offset, props->array_index,
+      props->data_type, props->offset, index,
       &read_value
     );
 
@@ -481,8 +518,13 @@ int write_data_control(struct fcp_device *device, struct control_props *props, i
     return -1;
   }
 
-  int offset = props->offset + props->array_index * width;
-  int err = fcp_data_write(device->hwdep, offset, width, value);
+  int index;
+  int err = data_control_index(device, props, &index);
+  if (err < 0)
+    return err;
+
+  int offset = props->offset + index * width;
+  err = fcp_data_write(device->hwdep, offset, width, value);
   if (err < 0)
     return err;
 

@@ -91,7 +91,16 @@ struct control_props {
   int    mirror_count;
   int   *mirror_offsets;
   int   *mirror_data_types;
-  int    size;             // for BYTES controls
+  /* A control whose element follows another setting (an input control's "select" in the device
+   * map): every read and write first reads the selector field at select_offset, then addresses
+   * element array_index + select_stride * selector of the control's member. For a preamp that keeps
+   * one gain per input mode -- the Focusrite Red's mic/line/inst gain bytes, chosen by the mode
+   * byte. A selector at or past select_count is treated as 0. select_count 0 = no selector. */
+  int    select_count;
+  int    select_offset;
+  int    select_data_type;
+  int    select_stride;
+  int    size;            // for BYTES controls
   int    value;
   void  *bytes_value;      // for BYTES controls - stores current value
   int    (*read_func)(struct fcp_device *, struct control_props *, int *);

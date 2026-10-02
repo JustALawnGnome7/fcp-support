@@ -38,6 +38,14 @@
     "stereo-link": {
       "name": "Line In %d Stereo Link Capture Switch",
       "type": "bool"
+    },
+    "gain": {
+      "name": "Line In %d Gain Capture Volume",
+      "type": "int",
+      "min": 0,
+      "max": 63,
+      "db-min": 0,
+      "db-max": 63
     }
   },
   "output-controls": {

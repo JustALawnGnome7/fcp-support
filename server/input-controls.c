@@ -62,6 +62,68 @@ static int get_channel_int(
   return 0;
 }
 
+/* An input control's optional "select" (device map): which element of the member the control
+ * addresses follows another setting of the same input.
+ *
+ *   "gain": { "index": 0, "member": "preampGain",
+ *             "select": { "member": "mode", "index": 0, "stride": 1, "count": 3 } }
+ *
+ * reads mode[0] (v) and addresses preampGain[0 + 1 * v]: one fader for a preamp that keeps a
+ * separate gain per input mode. "stride" defaults to 1. A selector value at or past "count" is
+ * treated as 0.
+ */
+static int parse_input_select(
+  struct json_object   *control,
+  struct json_object   *members,
+  const char           *member_name,
+  struct control_props *props
+) {
+  struct json_object *select, *sel_name, *sel_index, *sel_stride, *sel_count;
+  struct json_object *sel_member, *sel_offset, *sel_type;
+
+  if (!control || !json_object_object_get_ex(control, "select", &select))
+    return 0;
+
+  if (!json_object_object_get_ex(select, "member", &sel_name) ||
+      !json_object_object_get_ex(select, "count", &sel_count) ||
+      !json_object_object_get_ex(
+        members, json_object_get_string(sel_name), &sel_member
+      ) ||
+      !json_object_object_get_ex(sel_member, "offset", &sel_offset) ||
+      !json_object_object_get_ex(sel_member, "type", &sel_type)) {
+    log_error("Invalid select for %s (needs member and count)", member_name);
+    return -1;
+  }
+
+  if (props->mask || props->mirror_count || props->component_count) {
+    log_error("Invalid select for %s (needs a single, unmasked member)", member_name);
+    return -1;
+  }
+
+  props->select_data_type =
+    devmap_type_to_data_type(json_object_get_string(sel_type));
+  int width =
+    props->select_data_type == DATA_TYPE_UINT8  ||
+    props->select_data_type == DATA_TYPE_INT8   ? 1 :
+    props->select_data_type == DATA_TYPE_UINT16 ||
+    props->select_data_type == DATA_TYPE_INT16  ? 2 : 4;
+
+  props->select_offset = json_object_get_int(sel_offset) +
+    (json_object_object_get_ex(select, "index", &sel_index)
+       ? json_object_get_int(sel_index) * width : 0);
+  props->select_stride =
+    json_object_object_get_ex(select, "stride", &sel_stride)
+      ? json_object_get_int(sel_stride) : 1;
+  props->select_count = json_object_get_int(sel_count);
+
+  if (props->select_count < 1) {
+    log_error("Invalid select count for %s", member_name);
+    return -1;
+  }
+
+  return 0;
+}
+
 static int create_input_control(
   struct fcp_device  *device,
   const char         *input_name,
@@ -69,7 +131,9 @@ static int create_input_control(
   int                 array_index,
   struct json_object *member,
   const char         *member_name,
-  struct json_object *control_config
+  struct json_object *control_config,
+  struct json_object *control,
+  struct json_object *members
 ) {
   char control_name[64];
 
@@ -188,6 +252,9 @@ static int create_input_control(
     return -1;
   }
 
+  if (parse_input_select(control, members, member_name, &props) < 0)
+    return -1;
+
   return add_control(device, &props);
 }
 
@@ -243,7 +310,9 @@ static int create_input_controls(
           json_object_get_int(index),
           member,
           json_object_get_string(member_name),
-          control_config
+          control_config,
+          control,
+          members
         );
         if (err < 0)
           return err;
@@ -301,7 +370,9 @@ static int create_global_input_array_controls(
         i,
         member,
         config_key,
-        control_config
+        control_config,
+        NULL,
+        NULL
       );
       if (err < 0)
         return err;
