@@ -481,8 +481,8 @@
         "peak-index": 28,
         "_peak-index-provenance": "measured",
         "mixer-input-index": 0,
-        "peak-index-m": 22,
-        "peak-index-h": 20
+        "peak-index-m": 24,
+        "peak-index-h": 22
       },
       {
         "name": "Mixer Input 02",
@@ -490,8 +490,8 @@
         "peak-index": 29,
         "_peak-index-provenance": "stride",
         "mixer-input-index": 1,
-        "peak-index-m": 23,
-        "peak-index-h": 21
+        "peak-index-m": 25,
+        "peak-index-h": 23
       },
       {
         "name": "Mixer Input 03",
@@ -499,8 +499,8 @@
         "peak-index": 30,
         "_peak-index-provenance": "stride",
         "mixer-input-index": 2,
-        "peak-index-m": 24,
-        "peak-index-h": 22
+        "peak-index-m": 26,
+        "peak-index-h": 24
       },
       {
         "name": "Mixer Input 04",
@@ -508,8 +508,8 @@
         "peak-index": 31,
         "_peak-index-provenance": "stride",
         "mixer-input-index": 3,
-        "peak-index-m": 25,
-        "peak-index-h": 23
+        "peak-index-m": 27,
+        "peak-index-h": 25
       },
       {
         "name": "Mixer Input 05",
@@ -517,8 +517,8 @@
         "peak-index": 32,
         "_peak-index-provenance": "stride",
         "mixer-input-index": 4,
-        "peak-index-m": 26,
-        "peak-index-h": 24
+        "peak-index-m": 28,
+        "peak-index-h": 26
       },
       {
         "name": "Mixer Input 06",
@@ -526,8 +526,8 @@
         "peak-index": 33,
         "_peak-index-provenance": "stride",
         "mixer-input-index": 5,
-        "peak-index-m": 27,
-        "peak-index-h": 25
+        "peak-index-m": 29,
+        "peak-index-h": 27
       },
       {
         "name": "Mixer Input 07",
@@ -535,8 +535,8 @@
         "peak-index": 34,
         "_peak-index-provenance": "stride",
         "mixer-input-index": 6,
-        "peak-index-m": 28,
-        "peak-index-h": 26
+        "peak-index-m": 30,
+        "peak-index-h": 28
       },
       {
         "name": "Mixer Input 08",
@@ -544,8 +544,8 @@
         "peak-index": 35,
         "_peak-index-provenance": "stride",
         "mixer-input-index": 7,
-        "peak-index-m": 29,
-        "peak-index-h": 27
+        "peak-index-m": 31,
+        "peak-index-h": 29
       },
       {
         "name": "Mixer Input 09",
@@ -553,8 +553,8 @@
         "peak-index": 36,
         "_peak-index-provenance": "stride",
         "mixer-input-index": 8,
-        "peak-index-m": 30,
-        "peak-index-h": 28
+        "peak-index-m": 32,
+        "peak-index-h": 30
       },
       {
         "name": "Mixer Input 10",
@@ -562,8 +562,8 @@
         "peak-index": 37,
         "_peak-index-provenance": "stride",
         "mixer-input-index": 9,
-        "peak-index-m": 31,
-        "peak-index-h": 29
+        "peak-index-m": 33,
+        "peak-index-h": 31
       },
       {
         "name": "Mixer Input 11",
@@ -571,8 +571,8 @@
         "peak-index": 38,
         "_peak-index-provenance": "stride",
         "mixer-input-index": 10,
-        "peak-index-m": 32,
-        "peak-index-h": 30
+        "peak-index-m": 34,
+        "peak-index-h": 32
       },
       {
         "name": "Mixer Input 12",
@@ -580,8 +580,8 @@
         "peak-index": 39,
         "_peak-index-provenance": "stride",
         "mixer-input-index": 11,
-        "peak-index-m": 33,
-        "peak-index-h": 31
+        "peak-index-m": 35,
+        "peak-index-h": 33
       },
       {
         "name": "Mixer Input 13",
@@ -589,8 +589,8 @@
         "peak-index": 40,
         "_peak-index-provenance": "stride",
         "mixer-input-index": 12,
-        "peak-index-m": 34,
-        "peak-index-h": 32
+        "peak-index-m": 36,
+        "peak-index-h": 34
       },
       {
         "name": "Mixer Input 14",
@@ -598,8 +598,8 @@
         "peak-index": 41,
         "_peak-index-provenance": "stride",
         "mixer-input-index": 13,
-        "peak-index-m": 35,
-        "peak-index-h": 33
+        "peak-index-m": 37,
+        "peak-index-h": 35
       },
       {
         "name": "Mixer Input 15",
@@ -607,8 +607,8 @@
         "peak-index": 42,
         "_peak-index-provenance": "stride",
         "mixer-input-index": 14,
-        "peak-index-m": 36,
-        "peak-index-h": 34
+        "peak-index-m": 38,
+        "peak-index-h": 36
       },
       {
         "name": "Mixer Input 16",
@@ -616,8 +616,8 @@
         "peak-index": 43,
         "_peak-index-provenance": "stride",
         "mixer-input-index": 15,
-        "peak-index-m": 37,
-        "peak-index-h": 35
+        "peak-index-m": 39,
+        "peak-index-h": 37
       },
       {
         "name": "Mixer Input 17",
@@ -625,8 +625,8 @@
         "peak-index": 44,
         "_peak-index-provenance": "stride",
         "mixer-input-index": 16,
-        "peak-index-m": 38,
-        "peak-index-h": 36
+        "peak-index-m": 40,
+        "peak-index-h": 38
       },
       {
         "name": "Mixer Input 18",
@@ -634,8 +634,8 @@
         "peak-index": 45,
         "_peak-index-provenance": "stride",
         "mixer-input-index": 17,
-        "peak-index-m": 39,
-        "peak-index-h": 37
+        "peak-index-m": 41,
+        "peak-index-h": 39
       },
       {
         "name": "Mixer Input 19",
@@ -643,8 +643,8 @@
         "peak-index": 46,
         "_peak-index-provenance": "stride",
         "mixer-input-index": 18,
-        "peak-index-m": 40,
-        "peak-index-h": 38
+        "peak-index-m": 42,
+        "peak-index-h": 40
       },
       {
         "name": "Mixer Input 20",
@@ -652,8 +652,8 @@
         "peak-index": 47,
         "_peak-index-provenance": "stride",
         "mixer-input-index": 19,
-        "peak-index-m": 41,
-        "peak-index-h": 39
+        "peak-index-m": 43,
+        "peak-index-h": 41
       },
       {
         "name": "Mixer Input 21",
@@ -661,8 +661,8 @@
         "peak-index": 48,
         "_peak-index-provenance": "stride",
         "mixer-input-index": 20,
-        "peak-index-m": 42,
-        "peak-index-h": 40
+        "peak-index-m": 44,
+        "peak-index-h": 42
       },
       {
         "name": "Mixer Input 22",
@@ -670,8 +670,8 @@
         "peak-index": 49,
         "_peak-index-provenance": "stride",
         "mixer-input-index": 21,
-        "peak-index-m": 43,
-        "peak-index-h": 41
+        "peak-index-m": 45,
+        "peak-index-h": 43
       },
       {
         "name": "Mixer Input 23",
@@ -679,8 +679,8 @@
         "peak-index": 50,
         "_peak-index-provenance": "stride",
         "mixer-input-index": 22,
-        "peak-index-m": 44,
-        "peak-index-h": 42
+        "peak-index-m": 46,
+        "peak-index-h": 44
       },
       {
         "name": "Mixer Input 24",
@@ -688,8 +688,8 @@
         "peak-index": 51,
         "_peak-index-provenance": "stride",
         "mixer-input-index": 23,
-        "peak-index-m": 45,
-        "peak-index-h": 43
+        "peak-index-m": 47,
+        "peak-index-h": 45
       },
       {
         "name": "Mixer Input 25",
@@ -697,8 +697,8 @@
         "peak-index": 52,
         "_peak-index-provenance": "stride",
         "mixer-input-index": 24,
-        "peak-index-m": 46,
-        "peak-index-h": 44
+        "peak-index-m": 48,
+        "peak-index-h": 46
       },
       {
         "name": "Mixer Input 26",
@@ -706,8 +706,8 @@
         "peak-index": 53,
         "_peak-index-provenance": "stride",
         "mixer-input-index": 25,
-        "peak-index-m": 47,
-        "peak-index-h": 45
+        "peak-index-m": 49,
+        "peak-index-h": 47
       },
       {
         "name": "Mixer Input 27",
@@ -715,8 +715,8 @@
         "peak-index": 54,
         "_peak-index-provenance": "stride",
         "mixer-input-index": 26,
-        "peak-index-m": 48,
-        "peak-index-h": 46
+        "peak-index-m": 50,
+        "peak-index-h": 48
       },
       {
         "name": "Mixer Input 28",
@@ -724,8 +724,8 @@
         "peak-index": 55,
         "_peak-index-provenance": "stride",
         "mixer-input-index": 27,
-        "peak-index-m": 49,
-        "peak-index-h": 47
+        "peak-index-m": 51,
+        "peak-index-h": 49
       },
       {
         "name": "Mixer Input 29",
@@ -733,8 +733,8 @@
         "peak-index": 56,
         "_peak-index-provenance": "stride",
         "mixer-input-index": 28,
-        "peak-index-m": 50,
-        "peak-index-h": 48
+        "peak-index-m": 52,
+        "peak-index-h": 50
       },
       {
         "name": "Mixer Input 30",
@@ -742,8 +742,8 @@
         "peak-index": 57,
         "_peak-index-provenance": "measured",
         "mixer-input-index": 29,
-        "peak-index-m": 51,
-        "peak-index-h": 49
+        "peak-index-m": 53,
+        "peak-index-h": 51
       },
       {
         "name": "PCM 01",
