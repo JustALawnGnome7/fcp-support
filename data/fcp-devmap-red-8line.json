@@ -4,7 +4,7 @@
   "_provenance": "Authored from Focusrite's own device descriptor and CONFIRMED against the vendor's SET_DATA writes in a black-box MMIO capture of a Red control session: air 170+i, mode 162+i, phantom 154+i, hpf 178+i, phase 186+i and hardware-control-enable 90+i were each matched at every index, stereo-link at 194 (the vendor writes 194 only; the device sets 195 with it), and output gain, mute and dim wherever that session exercised them. The 16-bit gain encoding is confirmed by the value written (0xff90 = -112, the descriptor's own -112.0 dB minimum). Router pins come from the de-blobbed band-0 SET_MUX of that same capture. Clean-room: black-box observation plus published descriptors, never a vendor device map or driver.",
   "_limitations": [
     "Preamp gain is one control per input that follows the input's mode (select on the mode byte): mic/line/inst at 130/131/132 + 3i. The range 0..63 at 1 dB per code is measured for Mic and Inst (flat above 63; codes 1-7 act as 0, 8 dB under code 8); the absolute dB offset is assumed, not measured. Line mode's input is the DB25, which has not been measured: its byte is given the same range unverified.",
-    "peak-index is each destination's index in the band-0 SET_MUX table of the vendor bring-up (provenance \"band0\"): the rule that reproduces all four measured Clarett layouts exactly, and confirmed on this unit by routing an input signal through every kind of destination. E.g. PCM 1 = slot 0, Monitor Output 1 = 58, Mixer Input 01 = 124, Mixer Input 32 = 155 (156 slots). peak-index-m / peak-index-h are the same channel's slot at double and quad speed, by the same rule applied to the vendor's band-1 and band-2 tables, each destination looked up under the pin it carries at that speed (ADAT Output 2.1-2.4 take over port 1's pins); a destination with no key has no meter at that speed. router-pin-m / router-pin-h give a source's or destination's router pin at double/quad speed where it differs (\"0\" = gone there), so a routing change addresses ADAT port 2 by the pins it carries at that rate. The 32 Dante outputs (slots 90-121) are deliberately unmetered: the Level Meter is one ALSA control, capped at 128 values, and metering all 156 destinations would overflow it.",
+    "peak-index is each destination's index in the band-0 SET_MUX table of the vendor bring-up (provenance \"band0\"): the rule that reproduces all four measured Clarett layouts exactly, and confirmed on this unit by routing an input signal through every kind of destination. E.g. PCM 1 = slot 0, Monitor Output 1 = 58, Mixer Input 01 = 124, Mixer Input 32 = 155 (156 slots). peak-index-m / peak-index-h are the same channel's slot at double and quad speed, by the same rule applied to the vendor's band-1 and band-2 tables, each destination looked up under the pin it carries at that speed (ADAT Output 2.1-2.4 take over port 1's pins); a destination with no key has no meter at that speed. router-pin-m / router-pin-h give a source's or destination's router pin at double/quad speed where it differs (\"0\" = gone there), so a routing change addresses ADAT port 2 by the pins it carries at that rate. All 156 destinations are metered; past 128 channels the driver splits the Level Meter across two controls of that name (index 0 and 1), which alsa-scarlett-gui joins.",
     "hwGainEnable is a 2-bit field [XML] exposed as a single boolean. Only bit 0 has been seen set (the vendor wrote 1 to the monitor and headphone outputs alike); what the second bit selects is undecoded.",
     "versionStageRelease.offset is a placeholder, as on the Clarett maps, so Firmware Version shows a meaningless value. It exists because fcp-server requires the control for its socket-path TLV and lock handshake. NOTE the descriptor does place App and FPGA versions at offsets 8 and 12, but inside a firmware-upgrade segment block whose address space has not been shown to be the appspace -- unverified, so not used.",
     "notify-client masks are approximate, as on the Clarett: the Thunderbolt device does not expose the FCP notification word, so the driver relays a wildcard and every notification refreshes every control. Set here on the output gain, mute, dim and Meter Source -- the things a front panel can move -- and cleared on the preamp switches.",
@@ -1474,131 +1474,243 @@
       },
       {
         "name": "Dante 1",
-        "router-pin": "2048"
+        "router-pin": "2048",
+        "peak-index": 90,
+        "_peak-index-provenance": "band0",
+        "peak-index-m": 74,
+        "peak-index-h": 50
       },
       {
         "name": "Dante 2",
-        "router-pin": "2049"
+        "router-pin": "2049",
+        "peak-index": 91,
+        "_peak-index-provenance": "band0",
+        "peak-index-m": 75,
+        "peak-index-h": 51
       },
       {
         "name": "Dante 3",
-        "router-pin": "2050"
+        "router-pin": "2050",
+        "peak-index": 92,
+        "_peak-index-provenance": "band0",
+        "peak-index-m": 76,
+        "peak-index-h": 52
       },
       {
         "name": "Dante 4",
-        "router-pin": "2051"
+        "router-pin": "2051",
+        "peak-index": 93,
+        "_peak-index-provenance": "band0",
+        "peak-index-m": 77,
+        "peak-index-h": 53
       },
       {
         "name": "Dante 5",
-        "router-pin": "2052"
+        "router-pin": "2052",
+        "peak-index": 94,
+        "_peak-index-provenance": "band0",
+        "peak-index-m": 78,
+        "peak-index-h": 54
       },
       {
         "name": "Dante 6",
-        "router-pin": "2053"
+        "router-pin": "2053",
+        "peak-index": 95,
+        "_peak-index-provenance": "band0",
+        "peak-index-m": 79,
+        "peak-index-h": 55
       },
       {
         "name": "Dante 7",
-        "router-pin": "2054"
+        "router-pin": "2054",
+        "peak-index": 96,
+        "_peak-index-provenance": "band0",
+        "peak-index-m": 80,
+        "peak-index-h": 56
       },
       {
         "name": "Dante 8",
-        "router-pin": "2055"
+        "router-pin": "2055",
+        "peak-index": 97,
+        "_peak-index-provenance": "band0",
+        "peak-index-m": 81,
+        "peak-index-h": 57
       },
       {
         "name": "Dante 9",
-        "router-pin": "2056"
+        "router-pin": "2056",
+        "peak-index": 98,
+        "_peak-index-provenance": "band0",
+        "peak-index-m": 82,
+        "peak-index-h": 58
       },
       {
         "name": "Dante 10",
-        "router-pin": "2057"
+        "router-pin": "2057",
+        "peak-index": 99,
+        "_peak-index-provenance": "band0",
+        "peak-index-m": 83,
+        "peak-index-h": 59
       },
       {
         "name": "Dante 11",
-        "router-pin": "2058"
+        "router-pin": "2058",
+        "peak-index": 100,
+        "_peak-index-provenance": "band0",
+        "peak-index-m": 84,
+        "peak-index-h": 60
       },
       {
         "name": "Dante 12",
-        "router-pin": "2059"
+        "router-pin": "2059",
+        "peak-index": 101,
+        "_peak-index-provenance": "band0",
+        "peak-index-m": 85,
+        "peak-index-h": 61
       },
       {
         "name": "Dante 13",
-        "router-pin": "2060"
+        "router-pin": "2060",
+        "peak-index": 102,
+        "_peak-index-provenance": "band0",
+        "peak-index-m": 86,
+        "peak-index-h": 62
       },
       {
         "name": "Dante 14",
-        "router-pin": "2061"
+        "router-pin": "2061",
+        "peak-index": 103,
+        "_peak-index-provenance": "band0",
+        "peak-index-m": 87,
+        "peak-index-h": 63
       },
       {
         "name": "Dante 15",
-        "router-pin": "2062"
+        "router-pin": "2062",
+        "peak-index": 104,
+        "_peak-index-provenance": "band0",
+        "peak-index-m": 88,
+        "peak-index-h": 64
       },
       {
         "name": "Dante 16",
-        "router-pin": "2063"
+        "router-pin": "2063",
+        "peak-index": 105,
+        "_peak-index-provenance": "band0",
+        "peak-index-m": 89,
+        "peak-index-h": 65
       },
       {
         "name": "Dante 17",
-        "router-pin": "2064"
+        "router-pin": "2064",
+        "peak-index": 106,
+        "_peak-index-provenance": "band0",
+        "peak-index-m": 90
       },
       {
         "name": "Dante 18",
-        "router-pin": "2065"
+        "router-pin": "2065",
+        "peak-index": 107,
+        "_peak-index-provenance": "band0",
+        "peak-index-m": 91
       },
       {
         "name": "Dante 19",
-        "router-pin": "2066"
+        "router-pin": "2066",
+        "peak-index": 108,
+        "_peak-index-provenance": "band0",
+        "peak-index-m": 92
       },
       {
         "name": "Dante 20",
-        "router-pin": "2067"
+        "router-pin": "2067",
+        "peak-index": 109,
+        "_peak-index-provenance": "band0",
+        "peak-index-m": 93
       },
       {
         "name": "Dante 21",
-        "router-pin": "2068"
+        "router-pin": "2068",
+        "peak-index": 110,
+        "_peak-index-provenance": "band0",
+        "peak-index-m": 94
       },
       {
         "name": "Dante 22",
-        "router-pin": "2069"
+        "router-pin": "2069",
+        "peak-index": 111,
+        "_peak-index-provenance": "band0",
+        "peak-index-m": 95
       },
       {
         "name": "Dante 23",
-        "router-pin": "2070"
+        "router-pin": "2070",
+        "peak-index": 112,
+        "_peak-index-provenance": "band0",
+        "peak-index-m": 96
       },
       {
         "name": "Dante 24",
-        "router-pin": "2071"
+        "router-pin": "2071",
+        "peak-index": 113,
+        "_peak-index-provenance": "band0",
+        "peak-index-m": 97
       },
       {
         "name": "Dante 25",
-        "router-pin": "2072"
+        "router-pin": "2072",
+        "peak-index": 114,
+        "_peak-index-provenance": "band0",
+        "peak-index-m": 98
       },
       {
         "name": "Dante 26",
-        "router-pin": "2073"
+        "router-pin": "2073",
+        "peak-index": 115,
+        "_peak-index-provenance": "band0",
+        "peak-index-m": 99
       },
       {
         "name": "Dante 27",
-        "router-pin": "2074"
+        "router-pin": "2074",
+        "peak-index": 116,
+        "_peak-index-provenance": "band0",
+        "peak-index-m": 100
       },
       {
         "name": "Dante 28",
-        "router-pin": "2075"
+        "router-pin": "2075",
+        "peak-index": 117,
+        "_peak-index-provenance": "band0",
+        "peak-index-m": 101
       },
       {
         "name": "Dante 29",
-        "router-pin": "2076"
+        "router-pin": "2076",
+        "peak-index": 118,
+        "_peak-index-provenance": "band0",
+        "peak-index-m": 102
       },
       {
         "name": "Dante 30",
-        "router-pin": "2077"
+        "router-pin": "2077",
+        "peak-index": 119,
+        "_peak-index-provenance": "band0",
+        "peak-index-m": 103
       },
       {
         "name": "Dante 31",
-        "router-pin": "2078"
+        "router-pin": "2078",
+        "peak-index": 120,
+        "_peak-index-provenance": "band0",
+        "peak-index-m": 104
       },
       {
         "name": "Dante 32",
-        "router-pin": "2079"
+        "router-pin": "2079",
+        "peak-index": 121,
+        "_peak-index-provenance": "band0",
+        "peak-index-m": 105
       },
       {
         "name": "Mixer Input 01",
