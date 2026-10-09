@@ -80,36 +80,41 @@ static int get_usb_ids(int card_num, uint16_t *vid, uint16_t *pid) {
   return 0;
 }
 
-// Get the Clarett Thunderbolt model slug from /proc/asound/cardN/clarett. The
-// whole Clarett (and likely Red) line shares PCI id 1cb5:0002, so the snd-clarett
-// driver publishes the auto-detected model there as a stable slug (e.g. a line
-// "slug: clarett-8prex"). We use that slug as the per-model map key, the way a USB
+// Get the Clarett Thunderbolt model slug from the card's components string.
+// The whole Clarett (and Red) line shares PCI id 1cb5:0002, so the snd-clarett
+// driver publishes the auto-detected model as a component "Clarett:<slug>"
+// (e.g. "Clarett:clarett-8prex"), much as snd-usb-audio publishes
+// "USB<vid>:<pid>". We use the slug as the per-model map key, the way a USB
 // device is keyed on its product id. Returns 0 and a malloc'd slug in *out, or
-// -ENOENT if the card is not a Clarett (no such proc entry / no slug line).
+// -ENOENT if the card names no Clarett model.
 static int get_clarett_slug(int card_num, char **out) {
-  char *proc_path;
-  FILE *f;
+  static const char prefix[] = "Clarett:";
+  char card_name[16];
+  snd_ctl_t *ctl;
+  snd_ctl_card_info_t *info;
+  const char *p;
+  char *slug = NULL;
 
-  if (asprintf(&proc_path, "/proc/asound/card%d/clarett", card_num) < 0) {
-    log_error("Cannot allocate memory for proc path");
-    exit(1);
-  }
-
-  f = fopen(proc_path, "r");
-  free(proc_path);
-  if (!f)
+  snprintf(card_name, sizeof(card_name), "hw:%d", card_num);
+  if (snd_ctl_open(&ctl, card_name, 0) < 0)
     return -ENOENT;
 
-  char line[128];
-  char *slug = NULL;
-  while (fgets(line, sizeof(line), f)) {
-    char buf[64];
-    if (sscanf(line, "slug: %63s", buf) == 1) {
-      slug = strdup(buf);
-      break;
+  snd_ctl_card_info_alloca(&info);
+  if (snd_ctl_card_info(ctl, info) == 0) {
+    // Space-separated list of components; find the token with our prefix
+    for (p = snd_ctl_card_info_get_components(info); *p; ) {
+      size_t len = strcspn(p, " ");
+
+      if (len > sizeof(prefix) - 1 &&
+          strncmp(p, prefix, sizeof(prefix) - 1) == 0) {
+        slug = strndup(p + sizeof(prefix) - 1, len - (sizeof(prefix) - 1));
+        break;
+      }
+      p += len;
+      p += strspn(p, " ");
     }
   }
-  fclose(f);
+  snd_ctl_close(ctl);
 
   if (!slug)
     return -ENOENT;
@@ -181,8 +186,8 @@ int device_init(int card_num, struct fcp_device *device) {
 
   // Identify the device and build the per-model key used for map filenames.
   // USB devices expose /proc/asound/cardN/usbid and are keyed on the PID; the
-  // Clarett Thunderbolt line shares one PCI id, so its driver publishes a stable
-  // model slug at /proc/asound/cardN/clarett, which we use as the key instead.
+  // Clarett Thunderbolt line shares one PCI id, so its driver names the model in
+  // the card's components string ("Clarett:<slug>"), which we use instead.
   if (get_usb_ids(card_num, &device->usb_vid, &device->usb_pid) == 0) {
     log_debug("USB ID: %04x:%04x", device->usb_vid, device->usb_pid);
     if (asprintf(&device->map_key, "%04x", device->usb_pid) < 0) {
