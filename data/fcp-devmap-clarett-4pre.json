@@ -883,7 +883,7 @@
         "name": "PCM 19",
         "router-pin": "1546",
         "peak-index": 26,
-        "_peak-index-provenance": "band0",
+        "_peak-index-provenance": "measured",
         "peak-index-m": 22,
         "peak-index-h": 20
       },
@@ -891,7 +891,7 @@
         "name": "PCM 20",
         "router-pin": "1547",
         "peak-index": 27,
-        "_peak-index-provenance": "band0",
+        "_peak-index-provenance": "measured",
         "peak-index-m": 23,
         "peak-index-h": 21
       }
