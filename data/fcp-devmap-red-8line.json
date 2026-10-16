@@ -7,7 +7,7 @@
     "peak-index is each destination's index in the band-0 SET_MUX table of the vendor bring-up (provenance \"band0\"): the rule that reproduces all four measured Clarett layouts exactly, and confirmed on this unit by routing an input signal through every kind of destination. E.g. PCM 1 = slot 0, Monitor Output 1 = 58, Mixer Input 01 = 124, Mixer Input 32 = 155 (156 slots). peak-index-m / peak-index-h are the same channel's slot at double and quad speed, by the same rule applied to the vendor's band-1 and band-2 tables, each destination looked up under the pin it carries at that speed (ADAT Output 2.1-2.4 take over port 1's pins); a destination with no key has no meter at that speed. router-pin-m / router-pin-h give a source's or destination's router pin at double/quad speed where it differs (\"0\" = gone there), so a routing change addresses ADAT port 2 by the pins it carries at that rate. All 156 destinations are metered; past 128 channels the driver splits the Level Meter across two controls of that name (index 0 and 1), which alsa-scarlett-gui joins.",
     "hwGainEnable is a 2-bit field [XML] exposed as a single boolean. Only bit 0 has been seen set (the vendor wrote 1 to the monitor and headphone outputs alike); what the second bit selects is undecoded.",
     "versionStageRelease.offset is a placeholder, as on the Clarett maps, so Firmware Version shows a meaningless value. It exists because fcp-server requires the control for its socket-path TLV and lock handshake. NOTE the descriptor does place App and FPGA versions at offsets 8 and 12, but inside a firmware-upgrade segment block whose address space has not been shown to be the appspace -- unverified, so not used.",
-    "notify-client masks are approximate, as on the Clarett: the Thunderbolt device does not expose the FCP notification word, so the driver relays a wildcard and every notification refreshes every control. Set here on the output gain, mute, dim and Meter Source -- the things a front panel can move -- and cleared on the preamp switches.",
+    "notify-client is the descriptor's notification category per control (input-gain 0x200000, input-other 0x400000, output 0x800000, global 0x1000000), the event bits of the 0x400 cause register that the driver relays as the notification word. It needs a driver that relays them (clarett_model.notify_word); an older driver relays a wildcard, which still refreshes every notifiable control. Meter Source carries global and output, its category being unknown. hwGainEnable and the S/PDIF connectors stay at 0: host-owned.",
     "line-input-ref (offset 272, one bit per input, commit activate 21) is not exposed: it applies to all eight inputs but its audible effect has not been established.",
     "The mixer matrix needs nothing from this map and comes up on its own: fcp-server reads MIX_INFO from the device and builds the gain grid, and a Red answers 32 mixes x 32 inputs. All this map supplies is mixer-input-index on the Mixer Input destinations, which is what binds each grid column to a router pin. Mixes past 26 are named AA, AB, ... (bijective base 26); fcp-server's original 'A' + i ran off the end of the alphabet into \"Mix [\", \"Mix \\\", \"Mix ]\", which GKeyFile rejects as key names -- so a client storing state in one (alsa-scarlett-gui does) silently dropped two whole mixes. The mix-bus router SOURCES are named here, by this map, and use the same letters: a bus named differently from its gain controls cannot be tied to its column.",
     "No mixer-max-db, so fcp-server's +12 dB default applies, deliberately. Measured on a Red 8Line through Mixer Input -> Mix -> capture: unity is 0x2000 and the gain is exactly linear to +12 dB (measured/expected 1.00000 at every step, residual at the 24-bit floor), close to the top of a 16-bit coefficient (+12.04 dB). RedNet Control's own fader top is still unread (every SET_MIX in the one vendor capture wrote zero); Focusrite Control's on the Clarett is +6 dB.",
@@ -32,63 +32,63 @@
             14
           ],
           "notify-device": 1,
-          "notify-client": 1,
+          "notify-client": 8388608,
           "_note": "per-output gain @ 24+2i, signed 16-bit dB (-112..0), 1 dB/step; commit activate 1"
         },
         "outMuteDim6": {
           "offset": 74,
           "type": "bool",
           "notify-device": 15,
-          "notify-client": 1,
+          "notify-client": 8388608,
           "_note": "output 7 mute (bit 0) and dim (bit 1) @ 74; commit activate 15"
         },
         "outMuteDim7": {
           "offset": 75,
           "type": "bool",
           "notify-device": 15,
-          "notify-client": 1,
+          "notify-client": 8388608,
           "_note": "output 8 mute (bit 0) and dim (bit 1) @ 75; commit activate 15"
         },
         "outMuteDim8": {
           "offset": 76,
           "type": "bool",
           "notify-device": 15,
-          "notify-client": 1,
+          "notify-client": 8388608,
           "_note": "output 9 mute (bit 0) and dim (bit 1) @ 76; commit activate 15"
         },
         "outMuteDim9": {
           "offset": 77,
           "type": "bool",
           "notify-device": 15,
-          "notify-client": 1,
+          "notify-client": 8388608,
           "_note": "output 10 mute (bit 0) and dim (bit 1) @ 77; commit activate 15"
         },
         "outMuteDim10": {
           "offset": 78,
           "type": "bool",
           "notify-device": 15,
-          "notify-client": 1,
+          "notify-client": 8388608,
           "_note": "output 11 mute (bit 0) and dim (bit 1) @ 78; commit activate 15"
         },
         "outMuteDim11": {
           "offset": 79,
           "type": "bool",
           "notify-device": 15,
-          "notify-client": 1,
+          "notify-client": 8388608,
           "_note": "output 12 mute (bit 0) and dim (bit 1) @ 79; commit activate 15"
         },
         "outMuteDim12": {
           "offset": 80,
           "type": "bool",
           "notify-device": 15,
-          "notify-client": 1,
+          "notify-client": 8388608,
           "_note": "output 13 mute (bit 0) and dim (bit 1) @ 80; commit activate 15"
         },
         "outMuteDim13": {
           "offset": 81,
           "type": "bool",
           "notify-device": 15,
-          "notify-client": 1,
+          "notify-client": 8388608,
           "_note": "output 14 mute (bit 0) and dim (bit 1) @ 81; commit activate 15"
         },
         "hwGainEnable": {
@@ -108,7 +108,7 @@
             2
           ],
           "notify-device": 11,
-          "notify-client": 0,
+          "notify-client": 4194304,
           "_note": "per-preamp 48V @ 154+i; activate 11"
         },
         "mode": {
@@ -118,7 +118,7 @@
             2
           ],
           "notify-device": 7,
-          "notify-client": 0,
+          "notify-client": 4194304,
           "_note": "per-preamp mode @ 162+i, 0=Mic/1=Line/2=Inst; activate 7"
         },
         "air": {
@@ -128,7 +128,7 @@
             2
           ],
           "notify-device": 8,
-          "notify-client": 0,
+          "notify-client": 4194304,
           "_note": "per-preamp air @ 170+i; activate 8"
         },
         "hpf": {
@@ -138,7 +138,7 @@
             2
           ],
           "notify-device": 10,
-          "notify-client": 0,
+          "notify-client": 4194304,
           "_note": "per-preamp high-pass @ 178+i; activate 10"
         },
         "phase": {
@@ -148,7 +148,7 @@
             2
           ],
           "notify-device": 12,
-          "notify-client": 0,
+          "notify-client": 4194304,
           "_note": "per-preamp phase invert @ 186+i; activate 12"
         },
         "preampGain": {
@@ -158,28 +158,28 @@
             6
           ],
           "notify-device": 9,
-          "notify-client": 1,
+          "notify-client": 6291456,
           "_note": "preamp gain @ 130 + 3i + mode (mic/line/inst), 0..63 = dB; activate 9"
         },
         "stereoLink": {
           "offset": 194,
           "type": "bool",
           "notify-device": 13,
-          "notify-client": 0,
+          "notify-client": 4194304,
           "_note": "preamp stereo link @ 194 (195 mirrors it in the device); activate 13"
         },
         "muteSwitch": {
           "offset": 124,
           "type": "uint8",
           "notify-device": 2,
-          "notify-client": 1,
+          "notify-client": 8388608,
           "_note": "monitor mute = bit 0 of @ 124 (dim is bit 1); commit activate 2"
         },
         "dimSwitch": {
           "offset": 124,
           "type": "uint8",
           "notify-device": 2,
-          "notify-client": 1,
+          "notify-client": 8388608,
           "_note": "monitor dim = bit 1 of @ 124 (mute is bit 0); commit activate 2"
         },
         "spdifSourceInput": {
@@ -200,49 +200,49 @@
           "offset": 268,
           "type": "uint8",
           "notify-device": 14,
-          "notify-client": 1,
+          "notify-client": 25165824,
           "_note": "front-panel meter-bridge source @ 268; activate 14; enum [XML]; settable from the front panel, so re-read on notification"
         },
         "grpGain0": {
           "offset": 112,
           "type": "int16",
           "notify-device": 6,
-          "notify-client": 1,
+          "notify-client": 8388608,
           "_note": "Monitor knob group gain @ 112, signed dB -112..0; commit activate 6"
         },
         "grpMuteDim0": {
           "offset": 124,
           "type": "bool",
           "notify-device": 2,
-          "notify-client": 1,
+          "notify-client": 8388608,
           "_note": "Monitor knob group mute (bit 0) / dim (bit 1) @ 124; commit activate 2"
         },
         "grpGain1": {
           "offset": 116,
           "type": "int16",
           "notify-device": 6,
-          "notify-client": 1,
+          "notify-client": 8388608,
           "_note": "Headphones 1 knob group gain @ 116, signed dB -112..0; commit activate 6"
         },
         "grpMuteDim1": {
           "offset": 126,
           "type": "bool",
           "notify-device": 2,
-          "notify-client": 1,
+          "notify-client": 8388608,
           "_note": "Headphones 1 knob group mute (bit 0) / dim (bit 1) @ 126; commit activate 2"
         },
         "grpGain2": {
           "offset": 120,
           "type": "int16",
           "notify-device": 6,
-          "notify-client": 1,
+          "notify-client": 8388608,
           "_note": "Headphones 2 knob group gain @ 120, signed dB -112..0; commit activate 6"
         },
         "grpMuteDim2": {
           "offset": 128,
           "type": "bool",
           "notify-device": 2,
-          "notify-client": 1,
+          "notify-client": 8388608,
           "_note": "Headphones 2 knob group mute (bit 0) / dim (bit 1) @ 128; commit activate 2"
         }
       }
