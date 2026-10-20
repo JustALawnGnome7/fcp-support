@@ -131,9 +131,6 @@ static int create_output_control(
     props.min = 0;
     props.max = 1;
 
-    /* Active-low switches: "invert" with "invert-base": 1 maps device = 1 - alsa. */
-    parse_control_invert(control_config, &props);
-
   } else if (!strcmp(type_str, "bool-bitmap")) {
     /* One bit of a shared byte: the member gives the byte, the devmap's per-output "index" gives
      * the bit. Same type name and read/write functions as the output-group path already uses; this
@@ -145,8 +142,6 @@ static int create_output_control(
     props.max = 1;
     props.read_func = read_bitmap_data_control;
     props.write_func = write_bitmap_data_control;
-
-    parse_control_invert(control_config, &props);
 
   } else if (!strcmp(type_str, "int")) {
     struct json_object *min, *max;
@@ -494,8 +489,6 @@ static int create_output_group_controls(
           tlv[3] = json_object_get_int(db_max_obj) * 100;
           props.tlv = tlv;
         }
-
-        parse_control_invert(control_config, &props);
 
       } else {
         log_error("Unsupported control type %s for %s", type_str, control_path);

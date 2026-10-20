@@ -241,24 +241,20 @@ int invert_control_value(const struct control_props *props, int value) {
   if (!props->value_invert)
     return value;
 
-  return props->value_invert_base - value;
+  return -value;
 }
 
-/* Read the invert configuration for an int control from an ALSA map entry. "invert-base" defaults
- * to 0, which is the -gain <-> +attenuation case; a device storing e.g. 127-v sets it to 127.
+/* Read the invert configuration for an int control from an ALSA map entry: "invert": true stores
+ * the negated value, the -gain <-> +attenuation case.
  */
 void parse_control_invert(struct json_object *control_config, struct control_props *props) {
-  struct json_object *invert, *invert_base;
+  struct json_object *invert;
 
   if (!json_object_object_get_ex(control_config, "invert", &invert) ||
       !json_object_get_boolean(invert))
     return;
 
   props->value_invert = 1;
-  props->value_invert_base =
-    json_object_object_get_ex(control_config, "invert-base", &invert_base)
-      ? json_object_get_int(invert_base)
-      : 0;
 }
 
 /* Parse an ALSA map "values" array into enum names, and — for the object form — the device values
@@ -405,18 +401,11 @@ int read_data_control(struct fcp_device *device, struct control_props *props, in
           return 0;
         }
       }
-      /* The stored byte is outside the set this control can select. Report the first entry rather
-       * than failing the read: a device whose configuration space has never been written holds 0
-       * there, and 0 need not be one of the selectable values (a preamp mode of {Line=1, Inst=2},
-       * say). Failing here would leave the control created but never initialised or unlocked, so
-       * one unwritten byte would take out the control for the whole session.
-       */
-      log_warning(
-        "Value %d of %s is not one of its selectable values; reporting %s",
-        read_value, props->name, props->enum_names[0]
+      log_error(
+        "Invalid enumerated value %d for control %s",
+        read_value, props->name
       );
-      *value = 0;
-      return 0;
+      return -1;
     }
 
     /* Undo the device's storage encoding first, then fit the result to what

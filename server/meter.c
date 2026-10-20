@@ -195,11 +195,11 @@ static void build_meter_map(struct fcp_device *device, int band, int with_labels
     return;
   }
 
-  /* METER_INFO is a floor, not the array size, on devices that report no slot count: the Clarett
-   * Thunderbolt line answers 00 02 0c 00 (-> 2 x 12 = 24), yet a signal routed to Mixer Input 30 on
-   * a 2Pre reads back at slot 47. Where the map asks for more slots than the device admits to, and
-   * every index is inside the sanity limit, believe the map -- its indices are measured. Rejecting
-   * them would not just drop those entries, it would discard the whole meter map below. */
+  /* METER_INFO is a floor, not the array size, on the Thunderbolt Clarett and Red: the Clarett
+   * answers 00 02 0c 00 (a slot count of 0) yet serves 48 slots on a 2Pre, and the Red 8Line
+   * reports 58 of its 156. Where the map asks for more slots than the device admits to, and every
+   * index is inside the sanity limit, believe the map -- its indices are measured. Rejecting them
+   * would not just drop those entries, it would discard the whole meter map below. */
   int max_idx = max_peak_index(sources);
   int sink_max = max_peak_index(sinks);
 

@@ -84,8 +84,8 @@ static int run(struct fcp_device *device) {
 
     /* Idle tick. The device gives no notification when its sample rate changes, and the rate can move
      * with no control event at all (a DAW simply opening a stream), so the meter mapping has to be
-     * re-checked on a timer. One FCP query per second, and a rebuild only when the speed band
-     * actually changes. */
+     * re-checked on a timer. Once a second it reads the driver's proc entry (no device traffic),
+     * and rebuilds only when the speed band actually changes. */
     struct timeval tv = { .tv_sec = 1, .tv_usec = 0 };
 
     err = select(nfds, &rfds, NULL, NULL, &tv);

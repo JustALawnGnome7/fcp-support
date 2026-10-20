@@ -438,9 +438,6 @@ static int create_global_control(
     props.min = 0;
     props.max = 1;
 
-    /* Active-low switches: "invert" with "invert-base": 1 maps device = 1 - alsa. */
-    parse_control_invert(control_config, &props);
-
   } else if (!strcmp(type_str, "bytes")) {
     props.type = SND_CTL_ELEM_TYPE_BYTES;
     props.size = json_object_get_int(json_object_object_get(member, "size"));
