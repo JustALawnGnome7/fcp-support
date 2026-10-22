@@ -174,6 +174,246 @@
       "mirror": [
         "spdifSourceOutput"
       ]
+    },
+    "lineInRef0": {
+      "name": "Line In 1 Reference Capture Enum",
+      "type": "enum",
+      "values": [
+        {
+          "name": "+24dBu",
+          "value": 0
+        },
+        {
+          "name": "+18dBu",
+          "value": 1
+        }
+      ],
+      "mask": 1
+    },
+    "lineInRef1": {
+      "name": "Line In 2 Reference Capture Enum",
+      "type": "enum",
+      "values": [
+        {
+          "name": "+24dBu",
+          "value": 0
+        },
+        {
+          "name": "+18dBu",
+          "value": 2
+        }
+      ],
+      "mask": 2
+    },
+    "lineInRef2": {
+      "name": "Line In 3 Reference Capture Enum",
+      "type": "enum",
+      "values": [
+        {
+          "name": "+24dBu",
+          "value": 0
+        },
+        {
+          "name": "+18dBu",
+          "value": 4
+        }
+      ],
+      "mask": 4
+    },
+    "lineInRef3": {
+      "name": "Line In 4 Reference Capture Enum",
+      "type": "enum",
+      "values": [
+        {
+          "name": "+24dBu",
+          "value": 0
+        },
+        {
+          "name": "+18dBu",
+          "value": 8
+        }
+      ],
+      "mask": 8
+    },
+    "lineInRef4": {
+      "name": "Line In 5 Reference Capture Enum",
+      "type": "enum",
+      "values": [
+        {
+          "name": "+24dBu",
+          "value": 0
+        },
+        {
+          "name": "+18dBu",
+          "value": 16
+        }
+      ],
+      "mask": 16
+    },
+    "lineInRef5": {
+      "name": "Line In 6 Reference Capture Enum",
+      "type": "enum",
+      "values": [
+        {
+          "name": "+24dBu",
+          "value": 0
+        },
+        {
+          "name": "+18dBu",
+          "value": 32
+        }
+      ],
+      "mask": 32
+    },
+    "lineInRef6": {
+      "name": "Line In 7 Reference Capture Enum",
+      "type": "enum",
+      "values": [
+        {
+          "name": "+24dBu",
+          "value": 0
+        },
+        {
+          "name": "+18dBu",
+          "value": 64
+        }
+      ],
+      "mask": 64
+    },
+    "lineInRef7": {
+      "name": "Line In 8 Reference Capture Enum",
+      "type": "enum",
+      "values": [
+        {
+          "name": "+24dBu",
+          "value": 0
+        },
+        {
+          "name": "+18dBu",
+          "value": 128
+        }
+      ],
+      "mask": 128
+    },
+    "lineOutRef0": {
+      "name": "Line Out 7 Reference Playback Enum",
+      "type": "enum",
+      "values": [
+        {
+          "name": "+24dBu",
+          "value": 0
+        },
+        {
+          "name": "+18dBu",
+          "value": 1
+        }
+      ],
+      "mask": 1
+    },
+    "lineOutRef1": {
+      "name": "Line Out 8 Reference Playback Enum",
+      "type": "enum",
+      "values": [
+        {
+          "name": "+24dBu",
+          "value": 0
+        },
+        {
+          "name": "+18dBu",
+          "value": 2
+        }
+      ],
+      "mask": 2
+    },
+    "lineOutRef2": {
+      "name": "Line Out 9 Reference Playback Enum",
+      "type": "enum",
+      "values": [
+        {
+          "name": "+24dBu",
+          "value": 0
+        },
+        {
+          "name": "+18dBu",
+          "value": 4
+        }
+      ],
+      "mask": 4
+    },
+    "lineOutRef3": {
+      "name": "Line Out 10 Reference Playback Enum",
+      "type": "enum",
+      "values": [
+        {
+          "name": "+24dBu",
+          "value": 0
+        },
+        {
+          "name": "+18dBu",
+          "value": 8
+        }
+      ],
+      "mask": 8
+    },
+    "lineOutRef4": {
+      "name": "Line Out 11 Reference Playback Enum",
+      "type": "enum",
+      "values": [
+        {
+          "name": "+24dBu",
+          "value": 0
+        },
+        {
+          "name": "+18dBu",
+          "value": 16
+        }
+      ],
+      "mask": 16
+    },
+    "lineOutRef5": {
+      "name": "Line Out 12 Reference Playback Enum",
+      "type": "enum",
+      "values": [
+        {
+          "name": "+24dBu",
+          "value": 0
+        },
+        {
+          "name": "+18dBu",
+          "value": 32
+        }
+      ],
+      "mask": 32
+    },
+    "lineOutRef6": {
+      "name": "Line Out 13 Reference Playback Enum",
+      "type": "enum",
+      "values": [
+        {
+          "name": "+24dBu",
+          "value": 0
+        },
+        {
+          "name": "+18dBu",
+          "value": 64
+        }
+      ],
+      "mask": 64
+    },
+    "lineOutRef7": {
+      "name": "Line Out 14 Reference Playback Enum",
+      "type": "enum",
+      "values": [
+        {
+          "name": "+24dBu",
+          "value": 0
+        },
+        {
+          "name": "+18dBu",
+          "value": 128
+        }
+      ],
+      "mask": 128
     }
   },
   "sources": [

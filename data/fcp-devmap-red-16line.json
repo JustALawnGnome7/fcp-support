@@ -8,7 +8,7 @@
     "hwGainEnable is a 2-bit field [XML] exposed as a single boolean. Only bit 0 has been seen set (the vendor wrote 1 to the monitor and headphone outputs alike); what the second bit selects is undecoded.",
     "versionStageRelease.offset is a placeholder, as on the Clarett maps, so Firmware Version shows a meaningless value. It exists because fcp-server requires the control for its socket-path TLV and lock handshake. NOTE the descriptor does place App and FPGA versions at offsets 8 and 12, but inside a firmware-upgrade segment block whose address space has not been shown to be the appspace -- unverified, so not used.",
     "notify-client is the descriptor's notification category per control (input-gain 0x200000, input-other 0x400000, output 0x800000, global 0x1000000), the event bits of the 0x400 cause register that the driver relays as the notification word. It needs a driver that relays them (clarett_model.notify_word); an older driver relays a wildcard, which still refreshes every notifiable control. Meter Source carries global and output, its category being unknown. hwGainEnable and the S/PDIF connectors stay at 0: host-owned.",
-    "line-input-ref (offsets 272-273, one bit per input, commit activate 21) and line-output-ref (274-275) are not exposed: they cover all sixteen inputs and outputs, but their audible effect has not been established.",
+    "Reference level: one enum per line input (Line In 1-16 Reference Capture Enum) and per Line Output (Line Out 7-22 Reference Playback Enum, numbered by output index like the other output controls), +24dBu / +18dBu, each one bit of 272-273 / 274-275 [XML], commit activate 21. Measured on a Red 8Line: 0 = +24 dBu, 1 = +18 dBu, on inputs (front-panel display) and outputs (a 5.99 dB drop at the jack). The same layout is assumed here, unmeasured. Switching an output thumps on that output only. Not exposed: line-ref-linked @ 290 (activate 26), whose effect is untested. Notification categories (input-other / output) are the descriptor's sections; a front-panel change has not been seen to raise them.",
     "The mixer matrix needs nothing from this map and comes up on its own: fcp-server reads MIX_INFO from the device and builds the gain grid, and a Red answers 32 mixes x 32 inputs. All this map supplies is mixer-input-index on the Mixer Input destinations, which is what binds each grid column to a router pin. Mixes past 26 are named AA, AB, ... (bijective base 26); fcp-server's original 'A' + i ran off the end of the alphabet into \"Mix [\", \"Mix \\\", \"Mix ]\", which GKeyFile rejects as key names -- so a client storing state in one (alsa-scarlett-gui does) silently dropped two whole mixes. The mix-bus router SOURCES are named here, by this map, and use the same letters: a bus named differently from its gain controls cannot be tied to its column.",
     "No mixer-max-db, so fcp-server's +12 dB default applies, deliberately. Measured on a Red 8Line through Mixer Input -> Mix -> capture: unity is 0x2000 and the gain is exactly linear to +12 dB (measured/expected 1.00000 at every step, residual at the 24-bit floor), close to the top of a 16-bit coefficient (+12.04 dB). RedNet Control's own fader top is still unread (every SET_MIX in the one vendor capture wrote zero); Focusrite Control's on the Clarett is +6 dB.",
     "Meter Source (268) comes from the descriptor -- the capture never wrote it -- but a write from the GUI moves the front panel's selection, and the front panel's own button steps through Analogue Inputs/Outputs and ADAT Inputs/Outputs 1-8 as 0/2/6/8 with matching labels (hardware-confirmed). The other values (S/PDIF, ADAT 9-16, Dante) are the descriptor's word alone; the button does not reach them. Being front-panel settable, it is re-read on notification. Monitor mute/dim (124) and the S/PDIF connectors (236/244) are capture-confirmed, offsets and commit activates both; the monitor knob's signed-dB field (112) is hardware-confirmed.",
@@ -300,6 +300,230 @@
           "notify-device": 2,
           "notify-client": 8388608,
           "_note": "Headphones 2 knob group mute (bit 0) / dim (bit 1) @ 128; commit activate 2"
+        },
+        "lineInRef0": {
+          "offset": 272,
+          "type": "uint8",
+          "notify-device": 21,
+          "notify-client": 4194304,
+          "_note": "line input 1 reference = bit 0 of @ 272; 0 = +24 dBu, 1 = +18 dBu; activate 21"
+        },
+        "lineInRef1": {
+          "offset": 272,
+          "type": "uint8",
+          "notify-device": 21,
+          "notify-client": 4194304,
+          "_note": "line input 2 reference = bit 1 of @ 272; 0 = +24 dBu, 1 = +18 dBu; activate 21"
+        },
+        "lineInRef2": {
+          "offset": 272,
+          "type": "uint8",
+          "notify-device": 21,
+          "notify-client": 4194304,
+          "_note": "line input 3 reference = bit 2 of @ 272; 0 = +24 dBu, 1 = +18 dBu; activate 21"
+        },
+        "lineInRef3": {
+          "offset": 272,
+          "type": "uint8",
+          "notify-device": 21,
+          "notify-client": 4194304,
+          "_note": "line input 4 reference = bit 3 of @ 272; 0 = +24 dBu, 1 = +18 dBu; activate 21"
+        },
+        "lineInRef4": {
+          "offset": 272,
+          "type": "uint8",
+          "notify-device": 21,
+          "notify-client": 4194304,
+          "_note": "line input 5 reference = bit 4 of @ 272; 0 = +24 dBu, 1 = +18 dBu; activate 21"
+        },
+        "lineInRef5": {
+          "offset": 272,
+          "type": "uint8",
+          "notify-device": 21,
+          "notify-client": 4194304,
+          "_note": "line input 6 reference = bit 5 of @ 272; 0 = +24 dBu, 1 = +18 dBu; activate 21"
+        },
+        "lineInRef6": {
+          "offset": 272,
+          "type": "uint8",
+          "notify-device": 21,
+          "notify-client": 4194304,
+          "_note": "line input 7 reference = bit 6 of @ 272; 0 = +24 dBu, 1 = +18 dBu; activate 21"
+        },
+        "lineInRef7": {
+          "offset": 272,
+          "type": "uint8",
+          "notify-device": 21,
+          "notify-client": 4194304,
+          "_note": "line input 8 reference = bit 7 of @ 272; 0 = +24 dBu, 1 = +18 dBu; activate 21"
+        },
+        "lineInRef8": {
+          "offset": 273,
+          "type": "uint8",
+          "notify-device": 21,
+          "notify-client": 4194304,
+          "_note": "line input 9 reference = bit 0 of @ 273; 0 = +24 dBu, 1 = +18 dBu; activate 21"
+        },
+        "lineInRef9": {
+          "offset": 273,
+          "type": "uint8",
+          "notify-device": 21,
+          "notify-client": 4194304,
+          "_note": "line input 10 reference = bit 1 of @ 273; 0 = +24 dBu, 1 = +18 dBu; activate 21"
+        },
+        "lineInRef10": {
+          "offset": 273,
+          "type": "uint8",
+          "notify-device": 21,
+          "notify-client": 4194304,
+          "_note": "line input 11 reference = bit 2 of @ 273; 0 = +24 dBu, 1 = +18 dBu; activate 21"
+        },
+        "lineInRef11": {
+          "offset": 273,
+          "type": "uint8",
+          "notify-device": 21,
+          "notify-client": 4194304,
+          "_note": "line input 12 reference = bit 3 of @ 273; 0 = +24 dBu, 1 = +18 dBu; activate 21"
+        },
+        "lineInRef12": {
+          "offset": 273,
+          "type": "uint8",
+          "notify-device": 21,
+          "notify-client": 4194304,
+          "_note": "line input 13 reference = bit 4 of @ 273; 0 = +24 dBu, 1 = +18 dBu; activate 21"
+        },
+        "lineInRef13": {
+          "offset": 273,
+          "type": "uint8",
+          "notify-device": 21,
+          "notify-client": 4194304,
+          "_note": "line input 14 reference = bit 5 of @ 273; 0 = +24 dBu, 1 = +18 dBu; activate 21"
+        },
+        "lineInRef14": {
+          "offset": 273,
+          "type": "uint8",
+          "notify-device": 21,
+          "notify-client": 4194304,
+          "_note": "line input 15 reference = bit 6 of @ 273; 0 = +24 dBu, 1 = +18 dBu; activate 21"
+        },
+        "lineInRef15": {
+          "offset": 273,
+          "type": "uint8",
+          "notify-device": 21,
+          "notify-client": 4194304,
+          "_note": "line input 16 reference = bit 7 of @ 273; 0 = +24 dBu, 1 = +18 dBu; activate 21"
+        },
+        "lineOutRef0": {
+          "offset": 274,
+          "type": "uint8",
+          "notify-device": 21,
+          "notify-client": 8388608,
+          "_note": "Line Output 1 reference = bit 0 of @ 274; 0 = +24 dBu, 1 = +18 dBu; activate 21"
+        },
+        "lineOutRef1": {
+          "offset": 274,
+          "type": "uint8",
+          "notify-device": 21,
+          "notify-client": 8388608,
+          "_note": "Line Output 2 reference = bit 1 of @ 274; 0 = +24 dBu, 1 = +18 dBu; activate 21"
+        },
+        "lineOutRef2": {
+          "offset": 274,
+          "type": "uint8",
+          "notify-device": 21,
+          "notify-client": 8388608,
+          "_note": "Line Output 3 reference = bit 2 of @ 274; 0 = +24 dBu, 1 = +18 dBu; activate 21"
+        },
+        "lineOutRef3": {
+          "offset": 274,
+          "type": "uint8",
+          "notify-device": 21,
+          "notify-client": 8388608,
+          "_note": "Line Output 4 reference = bit 3 of @ 274; 0 = +24 dBu, 1 = +18 dBu; activate 21"
+        },
+        "lineOutRef4": {
+          "offset": 274,
+          "type": "uint8",
+          "notify-device": 21,
+          "notify-client": 8388608,
+          "_note": "Line Output 5 reference = bit 4 of @ 274; 0 = +24 dBu, 1 = +18 dBu; activate 21"
+        },
+        "lineOutRef5": {
+          "offset": 274,
+          "type": "uint8",
+          "notify-device": 21,
+          "notify-client": 8388608,
+          "_note": "Line Output 6 reference = bit 5 of @ 274; 0 = +24 dBu, 1 = +18 dBu; activate 21"
+        },
+        "lineOutRef6": {
+          "offset": 274,
+          "type": "uint8",
+          "notify-device": 21,
+          "notify-client": 8388608,
+          "_note": "Line Output 7 reference = bit 6 of @ 274; 0 = +24 dBu, 1 = +18 dBu; activate 21"
+        },
+        "lineOutRef7": {
+          "offset": 274,
+          "type": "uint8",
+          "notify-device": 21,
+          "notify-client": 8388608,
+          "_note": "Line Output 8 reference = bit 7 of @ 274; 0 = +24 dBu, 1 = +18 dBu; activate 21"
+        },
+        "lineOutRef8": {
+          "offset": 275,
+          "type": "uint8",
+          "notify-device": 21,
+          "notify-client": 8388608,
+          "_note": "Line Output 9 reference = bit 0 of @ 275; 0 = +24 dBu, 1 = +18 dBu; activate 21"
+        },
+        "lineOutRef9": {
+          "offset": 275,
+          "type": "uint8",
+          "notify-device": 21,
+          "notify-client": 8388608,
+          "_note": "Line Output 10 reference = bit 1 of @ 275; 0 = +24 dBu, 1 = +18 dBu; activate 21"
+        },
+        "lineOutRef10": {
+          "offset": 275,
+          "type": "uint8",
+          "notify-device": 21,
+          "notify-client": 8388608,
+          "_note": "Line Output 11 reference = bit 2 of @ 275; 0 = +24 dBu, 1 = +18 dBu; activate 21"
+        },
+        "lineOutRef11": {
+          "offset": 275,
+          "type": "uint8",
+          "notify-device": 21,
+          "notify-client": 8388608,
+          "_note": "Line Output 12 reference = bit 3 of @ 275; 0 = +24 dBu, 1 = +18 dBu; activate 21"
+        },
+        "lineOutRef12": {
+          "offset": 275,
+          "type": "uint8",
+          "notify-device": 21,
+          "notify-client": 8388608,
+          "_note": "Line Output 13 reference = bit 4 of @ 275; 0 = +24 dBu, 1 = +18 dBu; activate 21"
+        },
+        "lineOutRef13": {
+          "offset": 275,
+          "type": "uint8",
+          "notify-device": 21,
+          "notify-client": 8388608,
+          "_note": "Line Output 14 reference = bit 5 of @ 275; 0 = +24 dBu, 1 = +18 dBu; activate 21"
+        },
+        "lineOutRef14": {
+          "offset": 275,
+          "type": "uint8",
+          "notify-device": 21,
+          "notify-client": 8388608,
+          "_note": "Line Output 15 reference = bit 6 of @ 275; 0 = +24 dBu, 1 = +18 dBu; activate 21"
+        },
+        "lineOutRef15": {
+          "offset": 275,
+          "type": "uint8",
+          "notify-device": 21,
+          "notify-client": 8388608,
+          "_note": "Line Output 16 reference = bit 7 of @ 275; 0 = +24 dBu, 1 = +18 dBu; activate 21"
         }
       }
     }
