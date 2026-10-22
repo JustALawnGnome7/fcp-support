@@ -414,6 +414,11 @@
         }
       ],
       "mask": 128
+    },
+    "lineRefLink": {
+      "name": "Link I/O Reference Levels Switch",
+      "type": "bool",
+      "mask": 1
     }
   },
   "sources": [
