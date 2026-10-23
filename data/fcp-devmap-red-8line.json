@@ -456,12 +456,7 @@
       },
       {
         "name": "Monitor Output 2",
-        "controls": {
-          "level": {
-            "index": 0,
-            "member": "grpGain0"
-          }
-        }
+        "controls": {}
       },
       {
         "name": "Headphone 1 (L)",
@@ -482,12 +477,7 @@
       },
       {
         "name": "Headphone 1 (R)",
-        "controls": {
-          "level": {
-            "index": 0,
-            "member": "grpGain1"
-          }
-        }
+        "controls": {}
       },
       {
         "name": "Headphone 2 (L)",
@@ -508,12 +498,7 @@
       },
       {
         "name": "Headphone 2 (R)",
-        "controls": {
-          "level": {
-            "index": 0,
-            "member": "grpGain2"
-          }
-        }
+        "controls": {}
       },
       {
         "name": "Line Output 1",
