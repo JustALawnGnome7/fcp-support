@@ -52,6 +52,11 @@ UDEV_DIR := $(DESTDIR)$(PREFIX)/lib/udev/rules.d
 DATADIR_PATH := $(PREFIX)/share/fcp-server
 DATADIR := $(DESTDIR)$(DATADIR_PATH)
 
+# Device maps for interfaces that cannot supply their own (fcp-server
+# loads fcp-devmap-<pid>.json before asking the device). Optional, so
+# an empty set installs nothing.
+DEVMAPS := $(wildcard data/fcp-devmap-*.json)
+
 DEPDIR := .deps
 DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPDIR)/$(*D)/$(*F).d
 
@@ -158,6 +163,7 @@ install-rules:
 install-data:
 	install -d $(DATADIR)
 	install -m 644 data/fcp-alsa-map-*.json $(DATADIR)/
+	$(if $(DEVMAPS),install -m 644 $(DEVMAPS) $(DATADIR)/)
 
 uninstall:
 	rm -f $(BINDIR)/fcp-tool
@@ -201,6 +207,7 @@ deb:
 	cp systemd/fcp-server.tmpfiles.conf deb-build/usr/lib/tmpfiles.d/fcp-server.conf
 	cp udev/99-fcp.rules deb-build/usr/lib/udev/rules.d/
 	cp data/fcp-alsa-map-*.json deb-build/usr/share/fcp-server/
+	$(if $(DEVMAPS),cp $(DEVMAPS) deb-build/usr/share/fcp-server/)
 	cp debian/copyright deb-build/usr/share/doc/$(NAME)/
 	sed "s/VERSION/$(PKG_VERSION)/g" debian/control > deb-build/DEBIAN/control
 	install -m 755 debian/postinst deb-build/DEBIAN/postinst
