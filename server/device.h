@@ -72,6 +72,18 @@ struct control_props {
   int    component_count;  // >0 for multi-component controls
   int   *offsets;          // offsets of each component
   int   *data_types;       // types of each component
+
+  // "hw-follow": while the switch member (e.g. an output's SW/HW
+  // setting) is non-zero, the control shows the source member's value
+  // (e.g. the front-panel knob) instead of its own, and writes to it
+  // are refused; follow_src_offset 0 = not a follower
+  int    follow_src_offset;
+  int    follow_src_data_type;
+  int    follow_sw_offset;
+  int    follow_sw_data_type;
+  int    follow_sw_index;
+  int    follow_locked;    // locked against other clients while HW
+
   int    size;             // for BYTES controls
   int    value;
   void  *bytes_value;      // for BYTES controls - stores current value

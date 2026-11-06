@@ -11,12 +11,173 @@
 #include "output-controls.h"
 #include "control-utils.h"
 #include "device-ops.h"
+#include "fcp.h"
 #include "log.h"
+
+static int data_type_width(int data_type) {
+  if (data_type == DATA_TYPE_UINT8 || data_type == DATA_TYPE_INT8)
+    return 1;
+  if (data_type == DATA_TYPE_UINT16 || data_type == DATA_TYPE_INT16)
+    return 2;
+  return 4;
+}
+
+/* "hw-follow": a control that shows another member's value while its
+ * output is under hardware control. On interfaces such as the Clarett
+ * USB the front-panel knob drives the outputs set to HW inside the
+ * device, but the device never copies the knob into those outputs'
+ * own volume and mute, which would otherwise show stale values.
+ */
+static int follow_is_hw(struct fcp_device *device, struct control_props *props) {
+  int width = data_type_width(props->follow_sw_data_type);
+  int value;
+
+  int err = fcp_data_read(
+    device->hwdep,
+    props->follow_sw_offset + props->follow_sw_index * width,
+    width, props->follow_sw_data_type & 1, &value
+  );
+  if (err < 0)
+    return err;
+
+  return value != 0;
+}
+
+static int read_follow_source(
+  struct fcp_device    *device,
+  struct control_props *props,
+  int                  *value
+) {
+  int err = fcp_data_read(
+    device->hwdep,
+    props->follow_src_offset,
+    data_type_width(props->follow_src_data_type),
+    props->follow_src_data_type & 1,
+    value
+  );
+  if (err < 0)
+    return err;
+
+  if (props->type == SND_CTL_ELEM_TYPE_BOOLEAN)
+    *value = !!*value;
+
+  return 0;
+}
+
+static int read_follow_control(
+  struct fcp_device    *device,
+  struct control_props *props,
+  int                  *value
+) {
+  int hw = follow_is_hw(device, props);
+  if (hw < 0)
+    return hw;
+
+  if (hw)
+    return read_follow_source(device, props, value);
+
+  return read_data_control(device, props, value);
+}
+
+/* Lock a follower against other clients while its output is under
+ * hardware control, as a read-only control would be, and show its
+ * current value. A lock raises no event, so a client that greys out
+ * such a control should watch the SW/HW switch itself.
+ */
+static void follow_update(
+  struct fcp_device    *device,
+  struct control_props *props
+) {
+  int hw = follow_is_hw(device, props);
+  if (hw < 0)
+    return;
+
+  if (hw != props->follow_locked) {
+    snd_ctl_elem_id_t *id;
+    snd_ctl_elem_id_alloca(&id);
+    snd_ctl_elem_id_set_interface(id, props->interface);
+    snd_ctl_elem_id_set_name(id, props->name);
+
+    int err = hw ? snd_ctl_elem_lock(device->ctl, id)
+                 : snd_ctl_elem_unlock(device->ctl, id);
+    if (err < 0)
+      log_error(
+        "Cannot %s %s: %s",
+        hw ? "lock" : "unlock", props->name, snd_strerror(err)
+      );
+    else
+      props->follow_locked = hw;
+  }
+
+  device_refresh_control(device, props);
+}
+
+/* Set the initial lock state of every follower */
+static void follow_init(struct fcp_device *device) {
+  for (int i = 0; i < device->ctrl_mgr.num_controls; i++) {
+    struct control_props *props = &device->ctrl_mgr.controls[i];
+
+    if (props->follow_src_offset)
+      follow_update(device, props);
+  }
+}
+
+/* After an output's SW/HW switch is written: copy the followed value
+ * into each follower's own member, so that the output keeps its level
+ * across the change, and show the followers' new state
+ */
+static int follow_switch_changed(
+  struct fcp_device    *device,
+  struct control_props *sw
+) {
+  struct control_props *controls = device->ctrl_mgr.controls;
+
+  for (int i = 0; i < device->ctrl_mgr.num_controls; i++) {
+    struct control_props *props = &controls[i];
+    int value;
+
+    if (!props->follow_src_offset ||
+        props->follow_sw_offset != sw->offset ||
+        props->follow_sw_index != sw->array_index)
+      continue;
+
+    int err = read_follow_source(device, props, &value);
+    if (err < 0)
+      return err;
+
+    err = write_data_control(device, props, value);
+    if (err < 0)
+      return err;
+
+    if (props->notify_device) {
+      err = fcp_data_notify(device->hwdep, props->notify_device);
+      if (err < 0)
+        return err;
+    }
+
+    follow_update(device, props);
+  }
+
+  return 0;
+}
 
 /* Special handling for volume controls as we don't always get a
  * notify that the device has changed the volume of linked outputs
  */
 int write_data_control_vol(struct fcp_device *device, struct control_props *props, int value) {
+  /* A follower under hardware control shows the followed value; put
+   * it back instead of writing
+   */
+  if (props->follow_src_offset) {
+    int hw = follow_is_hw(device, props);
+    if (hw < 0)
+      return hw;
+    if (hw) {
+      device_refresh_control(device, props);
+      return 0;
+    }
+  }
+
   int err = write_data_control(device, props, value);
   if (err < 0)
     return err;
@@ -40,6 +201,10 @@ int write_data_control_vol(struct fcp_device *device, struct control_props *prop
     }
   }
 
+  err = follow_switch_changed(device, props);
+  if (err < 0)
+    return err;
+
   /* Re-read from the device */
   device_handle_notification(device, props->notify_client);
 
@@ -53,7 +218,8 @@ static int create_output_control(
   struct json_object *member,
   const char         *control_type,
   struct json_object *control_config,
-  struct json_object *output_link
+  struct json_object *output_link,
+  struct json_object *output_ctrls
 ) {
   char control_name[64];
 
@@ -104,6 +270,58 @@ static int create_output_control(
     .read_func     = read_data_control,
     .write_func    = write_data_control_vol
   };
+
+  /* "hw-follow": { "switch": <this output's control type>,
+   *                "source": <member path> }
+   */
+  struct json_object *follow;
+  if (json_object_object_get_ex(control_config, "hw-follow", &follow)) {
+    struct json_object *sw_type, *source, *sw_ctl, *sw_member, *sw_index;
+    struct json_object *found;
+    const char *found_type;
+    int sw_offset, src_offset, src_notify_device, src_notify_client;
+
+    if (!json_object_object_get_ex(follow, "switch", &sw_type) ||
+        !json_object_object_get_ex(follow, "source", &source)) {
+      log_error("hw-follow for %s needs switch and source", control_type);
+      return -1;
+    }
+
+    if (output_ctrls &&
+        json_object_object_get_ex(
+          output_ctrls, json_object_get_string(sw_type), &sw_ctl
+        ) &&
+        json_object_object_get_ex(sw_ctl, "member", &sw_member) &&
+        json_object_object_get_ex(sw_ctl, "index", &sw_index)) {
+
+      if (find_member_by_path(
+            device, json_object_get_string(sw_member),
+            &found, &found_type, &sw_offset, false
+          ) < 0)
+        return -1;
+      props.follow_sw_offset = sw_offset;
+      props.follow_sw_data_type = devmap_type_to_data_type(found_type);
+      props.follow_sw_index = json_object_get_int(sw_index);
+
+      if (find_member_by_path_with_notify(
+            device, json_object_get_string(source),
+            &found, &found_type, &src_offset,
+            &src_notify_device, &src_notify_client, false
+          ) < 0)
+        return -1;
+      props.follow_src_offset = src_offset;
+      props.follow_src_data_type = devmap_type_to_data_type(found_type);
+
+      /* re-read when the followed value changes at the device */
+      props.notify_client |= src_notify_client;
+      props.read_func = read_follow_control;
+    } else {
+      log_debug(
+        "%s: output has no %s control, not following",
+        control_name, json_object_get_string(sw_type)
+      );
+    }
+  }
 
   if (output_link) {
     int array_len = json_object_array_length(output_link);
@@ -255,7 +473,8 @@ static int create_output_controls(
           member,
           json_object_get_string(member_name),
           control_config,
-          output_link
+          output_link,
+          controls
         );
         if (err < 0)
           return err;
@@ -540,6 +759,7 @@ static int create_global_output_array_controls(
         member,
         config_key,
         control_config,
+        NULL,
         NULL
       );
       if (err < 0)
@@ -590,6 +810,8 @@ int init_output_controls(struct fcp_device *device) {
   err = create_global_output_array_controls(device, members, output_controls);
   if (err < 0)
     return err;
+
+  follow_init(device);
 
   /* Get enums for output group controls */
   struct json_object *enums;

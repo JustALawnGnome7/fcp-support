@@ -15,6 +15,11 @@ int device_init_controls(struct fcp_device *device);
 
 void device_handle_notification(struct fcp_device *device, uint32_t notification);
 
+void device_refresh_control(
+  struct fcp_device    *device,
+  struct control_props *props
+);
+
 int device_handle_control_change(
   struct fcp_device          *device,
   const snd_ctl_elem_id_t    *control_id,

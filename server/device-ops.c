@@ -289,6 +289,131 @@ int device_init_controls(struct fcp_device *device) {
   return 0;
 }
 
+/* Re-read one control from the device and update ALSA if the value
+ * has changed */
+void device_refresh_control(
+  struct fcp_device    *device,
+  struct control_props *props
+) {
+  // Get current ALSA value
+  snd_ctl_elem_value_t *alsa_value;
+  snd_ctl_elem_id_t *id;
+  snd_ctl_elem_value_alloca(&alsa_value);
+  snd_ctl_elem_id_alloca(&id);
+
+  snd_ctl_elem_id_set_interface(id, props->interface);
+  snd_ctl_elem_id_set_name(id, props->name);
+  snd_ctl_elem_value_set_id(alsa_value, id);
+
+  int err = snd_ctl_elem_read(device->ctl, alsa_value);
+  if (err < 0) {
+    log_error(
+      "Failed to read value for control %s: %s",
+      props->name,
+      snd_strerror(err)
+    );
+    return;
+  }
+
+  bool changed = false;
+
+  if (props->type == SND_CTL_ELEM_TYPE_BYTES) {
+    // Handle BYTES controls
+    unsigned char *new_buf = calloc(1, props->size);
+    if (!new_buf) {
+      log_error("Cannot allocate memory for bytes notification");
+      return;
+    }
+
+    err = props->read_bytes_func(device, props, new_buf, props->size);
+    if (err < 0) {
+      log_error(
+        "Cannot get data for control %s: %s",
+        props->name,
+        snd_strerror(err)
+      );
+      free(new_buf);
+      return;
+    }
+
+    const unsigned char *old_buf = snd_ctl_elem_value_get_bytes(alsa_value);
+    if (memcmp(old_buf, new_buf, props->size) != 0) {
+      changed = true;
+      snd_ctl_elem_set_bytes(alsa_value, new_buf, props->size);
+      log_debug("Control %s bytes changed at device", props->name);
+
+      // Update stored value
+      memcpy(props->bytes_value, new_buf, props->size);
+    }
+
+    free(new_buf);
+
+  } else {
+    // Handle INTEGER, BOOLEAN, ENUMERATED controls
+    int count = props->component_count ? props->component_count : 1;
+    int values[count];
+
+    err = props->read_func(device, props, values);
+    if (err < 0) {
+      log_error(
+        "Cannot get data for control %s: %s",
+        props->name,
+        snd_strerror(err)
+      );
+      return;
+    }
+
+    for (int j = 0; j < count; j++) {
+      // Detect device-side changes by comparing against the cached
+      // value; the ALSA control value may reflect a client write
+      // that has not been serviced yet, so it cannot distinguish a
+      // device-side change from an in-flight client write
+      int old_value = props->component_count
+        ? snd_ctl_elem_value_get_integer(alsa_value, j)
+        : props->value;
+
+      if (values[j] != old_value) {
+        changed = true;
+        snd_ctl_elem_value_set_integer(alsa_value, j, values[j]);
+
+        if (!props->component_count)
+          props->value = values[j];
+
+        log_debug(
+          "Control %s value changed at device from %d to %d",
+          props->name,
+          old_value,
+          values[j]
+        );
+      }
+    }
+  }
+
+  if (!changed)
+    return;
+
+  // Update if changed
+  err = snd_ctl_elem_write(device->ctl, alsa_value);
+  if (err < 0) {
+    if (props->type == SND_CTL_ELEM_TYPE_BYTES) {
+      log_error(
+        "Failed to set value for %s: %s",
+        props->name,
+        snd_strerror(err)
+      );
+    } else {
+      log_error(
+        "Failed to set value %d for %s (%d..%d): %s",
+        snd_ctl_elem_value_get_integer(alsa_value, 0),
+        props->name,
+        props->min,
+        props->max,
+        snd_strerror(err)
+      );
+    }
+  }
+}
+
 void device_handle_notification(struct fcp_device *device, uint32_t notification) {
 
   log_debug("Notification: 0x%08x", notification);
@@ -297,126 +422,8 @@ void device_handle_notification(struct fcp_device *device, uint32_t notification
   for (int i = 0; i < device->ctrl_mgr.num_controls; i++) {
     struct control_props *props = &device->ctrl_mgr.controls[i];
 
-    if (!(notification & props->notify_client))
-      continue;
-
-    // Get current ALSA value
-    snd_ctl_elem_value_t *alsa_value;
-    snd_ctl_elem_id_t *id;
-    snd_ctl_elem_value_alloca(&alsa_value);
-    snd_ctl_elem_id_alloca(&id);
-
-    snd_ctl_elem_id_set_interface(id, props->interface);
-    snd_ctl_elem_id_set_name(id, props->name);
-    snd_ctl_elem_value_set_id(alsa_value, id);
-
-    int err = snd_ctl_elem_read(device->ctl, alsa_value);
-    if (err < 0) {
-      log_error(
-        "Failed to read value for control %s: %s",
-        props->name,
-        snd_strerror(err)
-      );
-      continue;
-    }
-
-    bool changed = false;
-
-    if (props->type == SND_CTL_ELEM_TYPE_BYTES) {
-      // Handle BYTES controls
-      unsigned char *new_buf = calloc(1, props->size);
-      if (!new_buf) {
-        log_error("Cannot allocate memory for bytes notification");
-        continue;
-      }
-
-      err = props->read_bytes_func(device, props, new_buf, props->size);
-      if (err < 0) {
-        log_error(
-          "Cannot get data for control %s: %s",
-          props->name,
-          snd_strerror(err)
-        );
-        free(new_buf);
-        continue;
-      }
-
-      const unsigned char *old_buf = snd_ctl_elem_value_get_bytes(alsa_value);
-      if (memcmp(old_buf, new_buf, props->size) != 0) {
-        changed = true;
-        snd_ctl_elem_set_bytes(alsa_value, new_buf, props->size);
-        log_debug("Control %s bytes changed at device", props->name);
-
-        // Update stored value
-        memcpy(props->bytes_value, new_buf, props->size);
-      }
-
-      free(new_buf);
-
-    } else {
-      // Handle INTEGER, BOOLEAN, ENUMERATED controls
-      int count = props->component_count ? props->component_count : 1;
-      int values[count];
-
-      err = props->read_func(device, props, values);
-      if (err < 0) {
-        log_error(
-          "Cannot get data for control %s: %s",
-          props->name,
-          snd_strerror(err)
-        );
-        continue;
-      }
-
-      for (int j = 0; j < count; j++) {
-        // Detect device-side changes by comparing against the cached
-        // value; the ALSA control value may reflect a client write
-        // that has not been serviced yet, so it cannot distinguish a
-        // device-side change from an in-flight client write
-        int old_value = props->component_count
-          ? snd_ctl_elem_value_get_integer(alsa_value, j)
-          : props->value;
-
-        if (values[j] != old_value) {
-          changed = true;
-          snd_ctl_elem_value_set_integer(alsa_value, j, values[j]);
-
-          if (!props->component_count)
-            props->value = values[j];
-
-          log_debug(
-            "Control %s value changed at device from %d to %d",
-            props->name,
-            old_value,
-            values[j]
-          );
-        }
-      }
-    }
-
-    if (!changed)
-      continue;
-
-    // Update if changed
-    err = snd_ctl_elem_write(device->ctl, alsa_value);
-    if (err < 0) {
-      if (props->type == SND_CTL_ELEM_TYPE_BYTES) {
-        log_error(
-          "Failed to set value for %s: %s",
-          props->name,
-          snd_strerror(err)
-        );
-      } else {
-        log_error(
-          "Failed to set value %d for %s (%d..%d): %s",
-          snd_ctl_elem_value_get_integer(alsa_value, 0),
-          props->name,
-          props->min,
-          props->max,
-          snd_strerror(err)
-        );
-      }
-    }
+    if (notification & props->notify_client)
+      device_refresh_control(device, props);
   }
 }
 
@@ -504,6 +511,16 @@ int device_handle_control_change(
       log_error("Cannot notify device: %s", snd_strerror(err));
       return err;
     }
+  }
+
+  // Controls showing this one's value (hw-follow): the device sends
+  // no notification for a change made by the host
+  for (int i = 0; i < device->ctrl_mgr.num_controls; i++) {
+    struct control_props *follower = &device->ctrl_mgr.controls[i];
+
+    if (follower->follow_src_offset &&
+        follower->follow_src_offset == props->offset)
+      device_refresh_control(device, follower);
   }
 
   return 0;
